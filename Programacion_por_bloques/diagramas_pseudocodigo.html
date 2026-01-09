@@ -1,0 +1,911 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Del Pensamiento a los Bloques: Laboratorio Interactivo</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        /* Custom styles for flowchart shapes using CSS (No SVG) */
+        .shape-oval {
+            border-radius: 50px;
+        }
+        .shape-parallelogram {
+            transform: skew(-20deg);
+        }
+        .shape-parallelogram-content {
+            transform: skew(20deg);
+        }
+        .shape-diamond {
+            transform: rotate(45deg);
+        }
+        .shape-diamond-content {
+            transform: rotate(-45deg);
+        }
+        /* Scratch block imitation */
+        .scratch-block {
+            border-radius: 4px 12px 12px 4px;
+            padding: 4px 8px;
+            color: white;
+            font-family: sans-serif;
+            font-weight: bold;
+            font-size: 0.85rem;
+            display: inline-block;
+            margin-bottom: 2px;
+            box-shadow: 1px 1px 0px rgba(0,0,0,0.2);
+            cursor: default;
+        }
+        .sb-event { background-color: #FFBF00; border: 1px solid #CE9B00; }
+        .sb-motion { background-color: #4C97FF; border: 1px solid #3373CC; }
+        .sb-looks { background-color: #9966FF; border: 1px solid #774DCB; }
+        .sb-control { background-color: #FFAB19; border: 1px solid #CF8B17; }
+        .sb-sensing { background-color: #5CB1D6; border: 1px solid #2E8EB8; }
+        .sb-operators { background-color: #59C059; border: 1px solid #389438; }
+        .sb-variables { background-color: #FF8C1A; border: 1px solid #DB7712; }
+        
+        /* Animation for active steps in the flowchart */
+        .active-step {
+            box-shadow: 0 0 10px 4px rgba(79, 70, 229, 0.4);
+            transform: scale(1.05);
+            transition: all 0.3s ease;
+            border-color: #4F46E5 !important;
+            background-color: #EEF2FF !important;
+            z-index: 10;
+        }
+
+        .flow-connector {
+            background-color: #cbd5e1;
+            transition: background-color 0.3s;
+        }
+        
+        /* Layout utilities for Charts */
+        .chart-container {
+            position: relative;
+            width: 100%;
+            height: 300px;
+        }
+        
+        body {
+            background-color: #FDFBF7; /* Warm neutral */
+            color: #334155;
+        }
+
+        /* Utility for fade in */
+        .fade-in {
+            animation: fadeIn 0.5s ease-in;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(5px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+    <!-- Chosen Palette: Warm Neutral Background (#FDFBF7), Slate Text (#334155), Indigo Primary (#4F46E5) for interaction. -->
+    <!-- Application Structure Plan: 
+         The app is designed as a "Programming Laboratory".
+         1. Theory Hall: Interactive cards connecting abstract symbols to concrete Scratch blocks.
+         2. The Workbench: A tabbed interface for the 3 challenges. This allows users to focus on one logic structure at a time (Sequence, Condition, Loop).
+            - Visually, the screen is split: Input/Controls on the left, Visual Flowchart in the middle, and Output/Visualization on the right.
+            - This structure reinforces the Input -> Process -> Output model.
+         3. Exam Room: A quick check of understanding.
+    -->
+    <!-- Visualization & Content Choices:
+         - Flowcharts: Built with CSS shapes (divs with border-radius/transform) to avoid external images/SVG dependencies.
+         - Interaction: Javascript adds the '.active-step' class to these shapes sequentially to simulate "execution flow".
+         - Chart.js: Used in Challenge 2 to visualize the threshold logic (Input vs Limit).
+         - Raw Canvas: Used in Challenge 3 to draw the polygon line-by-line, perfectly illustrating the "Repeat" block.
+    -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+</head>
+<body class="font-sans antialiased text-slate-700">
+
+    <!-- Header -->
+    <header class="bg-white border-b border-stone-200 sticky top-0 z-50 shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <div class="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center text-white font-bold text-xl">P</div>
+                <h1 class="text-xl font-bold text-slate-800 tracking-tight hidden sm:block">Laboratorio de Algoritmos</h1>
+            </div>
+            <nav class="flex space-x-1 sm:space-x-6 text-sm font-medium">
+                <button onclick="scrollToSection('theory')" class="px-3 py-2 rounded-md hover:bg-slate-50 text-slate-500 hover:text-indigo-600 transition">Simbología</button>
+                <button onclick="scrollToSection('workbench')" class="px-3 py-2 rounded-md hover:bg-slate-50 text-slate-500 hover:text-indigo-600 transition">Laboratorio</button>
+                <button onclick="scrollToSection('quiz')" class="px-3 py-2 rounded-md hover:bg-slate-50 text-slate-500 hover:text-indigo-600 transition">Evaluación</button>
+            </nav>
+        </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-20">
+
+        <!-- Intro -->
+        <section class="text-center max-w-3xl mx-auto mt-8">
+            <span class="bg-indigo-100 text-indigo-700 text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wide">Guía Interactiva</span>
+            <h2 class="text-4xl md:text-5xl font-extrabold text-slate-900 mt-4 mb-6">Del Pensamiento a los Bloques</h2>
+            <p class="text-lg text-slate-600 leading-relaxed">
+                Antes de programar, debemos pensar. Esta herramienta te ayuda a visualizar los tres pasos clave:
+                <br>
+                <span class="font-bold text-slate-800">Algoritmo</span> (Receta) → 
+                <span class="font-bold text-indigo-600">Diagrama</span> (Mapa) → 
+                <span class="font-bold text-amber-500">Bloques</span> (Código).
+            </p>
+        </section>
+
+        <!-- Section 1: Symbology Translator -->
+        <section id="theory" class="scroll-mt-24">
+            <div class="mb-8 border-l-4 border-indigo-500 pl-4">
+                <h3 class="text-2xl font-bold text-slate-800">1. Diccionario Visual</h3>
+                <p class="text-slate-600 mt-1">Descubre qué significa cada figura geométrica en el mundo de la programación.</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <!-- Terminal -->
+                <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200 hover:shadow-md transition cursor-pointer group hover:-translate-y-1" onclick="toggleCard('card-terminal')">
+                    <div class="h-24 flex items-center justify-center mb-4 bg-slate-50 rounded-lg group-hover:bg-indigo-50 transition">
+                        <div class="shape-oval border-2 border-slate-800 px-6 py-2 bg-white text-xs font-bold uppercase tracking-wider shadow-sm">Inicio / Fin</div>
+                    </div>
+                    <div class="text-center">
+                        <h4 class="font-bold text-slate-800 mb-1">Terminal</h4>
+                        <p class="text-xs text-slate-400">Clic para ver equivalencia</p>
+                        <div id="card-terminal" class="hidden mt-4 pt-4 border-t border-slate-100 text-sm text-slate-600 fade-in">
+                            <p class="mb-3 font-medium">Marca dónde empieza y termina el algoritmo.</p>
+                            <div class="text-xs font-bold text-amber-500 uppercase mb-1">En Scratch:</div>
+                            <div class="scratch-block sb-event">al hacer clic en 🚩</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Input/Output -->
+                <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200 hover:shadow-md transition cursor-pointer group hover:-translate-y-1" onclick="toggleCard('card-io')">
+                    <div class="h-24 flex items-center justify-center mb-4 bg-slate-50 rounded-lg group-hover:bg-indigo-50 transition">
+                        <div class="shape-parallelogram border-2 border-slate-800 px-4 py-2 bg-white shadow-sm">
+                            <div class="shape-parallelogram-content text-xs font-bold uppercase tracking-wider">Entrada / Salida</div>
+                        </div>
+                    </div>
+                    <div class="text-center">
+                        <h4 class="font-bold text-slate-800 mb-1">Paralelogramo</h4>
+                        <p class="text-xs text-slate-400">Clic para ver equivalencia</p>
+                        <div id="card-io" class="hidden mt-4 pt-4 border-t border-slate-100 text-sm text-slate-600 fade-in">
+                            <p class="mb-3 font-medium">Entrada de datos (Leer) o Salida de resultados (Escribir).</p>
+                            <div class="text-xs font-bold text-amber-500 uppercase mb-1">En Scratch:</div>
+                            <div class="scratch-block sb-sensing">preguntar [¿Dato?] y esperar</div>
+                            <div class="mt-1 scratch-block sb-looks">decir [Hola!]</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Process -->
+                <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200 hover:shadow-md transition cursor-pointer group hover:-translate-y-1" onclick="toggleCard('card-process')">
+                    <div class="h-24 flex items-center justify-center mb-4 bg-slate-50 rounded-lg group-hover:bg-indigo-50 transition">
+                        <div class="border-2 border-slate-800 px-6 py-3 bg-white text-xs font-bold uppercase tracking-wider shadow-sm">Proceso</div>
+                    </div>
+                    <div class="text-center">
+                        <h4 class="font-bold text-slate-800 mb-1">Rectángulo</h4>
+                        <p class="text-xs text-slate-400">Clic para ver equivalencia</p>
+                        <div id="card-process" class="hidden mt-4 pt-4 border-t border-slate-100 text-sm text-slate-600 fade-in">
+                            <p class="mb-3 font-medium">Cálculos matemáticos o asignación de variables.</p>
+                            <div class="text-xs font-bold text-amber-500 uppercase mb-1">En Scratch:</div>
+                            <div class="scratch-block sb-variables">fijar [Total] a (A + B)</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Decision -->
+                <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200 hover:shadow-md transition cursor-pointer group hover:-translate-y-1" onclick="toggleCard('card-decision')">
+                    <div class="h-24 flex items-center justify-center mb-4 bg-slate-50 rounded-lg group-hover:bg-indigo-50 transition">
+                        <div class="shape-diamond border-2 border-slate-800 w-12 h-12 flex items-center justify-center bg-white shadow-sm">
+                            <div class="shape-diamond-content text-xs font-bold">?</div>
+                        </div>
+                    </div>
+                    <div class="text-center">
+                        <h4 class="font-bold text-slate-800 mb-1">Rombo</h4>
+                        <p class="text-xs text-slate-400">Clic para ver equivalencia</p>
+                        <div id="card-decision" class="hidden mt-4 pt-4 border-t border-slate-100 text-sm text-slate-600 fade-in">
+                            <p class="mb-3 font-medium">Toma de decisiones. Divide el camino en SÍ o NO.</p>
+                            <div class="text-xs font-bold text-amber-500 uppercase mb-1">En Scratch:</div>
+                            <div class="scratch-block sb-control">si &lt;condición&gt; entonces</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 2: The Logic Workbench -->
+        <section id="workbench" class="scroll-mt-24">
+            <div class="mb-8 border-l-4 border-amber-500 pl-4">
+                <h3 class="text-2xl font-bold text-slate-800">2. Laboratorio de Algoritmos</h3>
+                <p class="text-slate-600 mt-1">
+                    Selecciona un reto, introduce datos y presiona "Ejecutar" para ver cómo fluye la lógica.
+                </p>
+            </div>
+
+            <!-- Tab Navigation -->
+            <div class="flex overflow-x-auto space-x-1 border-b border-slate-200 mb-0">
+                <button onclick="switchTab('tab-seq')" id="btn-tab-seq" class="px-6 py-4 text-sm font-bold border-b-2 border-indigo-600 text-indigo-600 focus:outline-none bg-white rounded-t-lg transition-colors min-w-[140px]">
+                    1. Secuencia
+                </button>
+                <button onclick="switchTab('tab-cond')" id="btn-tab-cond" class="px-6 py-4 text-sm font-medium border-b-2 border-transparent text-slate-500 hover:text-slate-700 hover:bg-slate-50 focus:outline-none rounded-t-lg transition-colors min-w-[140px]">
+                    2. Decisión
+                </button>
+                <button onclick="switchTab('tab-loop')" id="btn-tab-loop" class="px-6 py-4 text-sm font-medium border-b-2 border-transparent text-slate-500 hover:text-slate-700 hover:bg-slate-50 focus:outline-none rounded-t-lg transition-colors min-w-[140px]">
+                    3. Bucle
+                </button>
+            </div>
+
+            <!-- Content Container -->
+            <div class="bg-white rounded-b-2xl rounded-tr-2xl shadow-lg border border-slate-200 min-h-[600px] relative">
+                
+                <!-- Tab 1: Sequence (Tip Calculator) -->
+                <div id="tab-seq" class="tab-content p-6 lg:p-10 fade-in">
+                    <div class="grid grid-cols-1 lg:grid-cols-12 gap-10 h-full">
+                        
+                        <!-- Col 1: Context & Inputs -->
+                        <div class="lg:col-span-4 space-y-6">
+                            <div>
+                                <h4 class="font-bold text-xl text-indigo-900 mb-2">Calculadora de Propinas</h4>
+                                <p class="text-sm text-slate-600">
+                                    <strong>Estructura Secuencial:</strong> Los pasos se ejecutan uno tras otro, sin saltos ni repeticiones. Es la forma más básica de algoritmo.
+                                </p>
+                            </div>
+                            
+                            <div class="bg-slate-50 p-6 rounded-xl border border-slate-200">
+                                <label class="block text-sm font-bold text-slate-700 mb-2">Importe de la cuenta ($)</label>
+                                <input type="number" id="input-tip" value="100" class="w-full border-slate-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500 p-3 border text-lg" placeholder="Ej: 100">
+                                <p class="text-xs text-slate-400 mt-2">La propina será del 10%.</p>
+                            </div>
+
+                            <button onclick="runTipAlgorithm()" class="w-full bg-indigo-600 text-white font-bold px-4 py-4 rounded-xl hover:bg-indigo-700 transition shadow-md hover:shadow-lg flex items-center justify-center gap-2 transform active:scale-95">
+                                <span>▶ EJECUTAR ALGORITMO</span>
+                            </button>
+
+                            <div class="bg-slate-900 text-white p-6 rounded-xl shadow-inner">
+                                <span class="text-xs font-bold text-slate-400 uppercase tracking-wider block mb-2">Salida (Output)</span>
+                                <div id="output-tip" class="text-3xl font-mono text-green-400 font-bold">--</div>
+                                <div id="output-tip-detail" class="text-sm text-slate-400 mt-1">Esperando datos...</div>
+                            </div>
+                        </div>
+
+                        <!-- Col 2: Interactive Flowchart -->
+                        <div class="lg:col-span-8 bg-slate-50 rounded-2xl border border-dashed border-slate-300 p-8 flex flex-col items-center justify-center relative min-h-[500px]">
+                            <h5 class="absolute top-4 left-4 text-xs font-bold text-slate-400 uppercase tracking-widest bg-white px-2 py-1 rounded border border-slate-200">Visualización del Flujo</h5>
+                            
+                            <div class="flex flex-col items-center w-full max-w-md" id="flow-seq">
+                                <!-- Start -->
+                                <div id="seq-step-1" class="shape-oval border-2 border-slate-400 bg-white px-8 py-2 text-sm font-bold shadow-sm transition-all duration-300">Inicio</div>
+                                <div class="h-6 w-0.5 flow-connector"></div>
+                                
+                                <!-- Input -->
+                                <div id="seq-step-2" class="shape-parallelogram border-2 border-slate-400 bg-white px-8 py-4 shadow-sm transition-all duration-300">
+                                    <div class="shape-parallelogram-content text-sm text-center font-medium">Leer Importe</div>
+                                </div>
+                                <div class="h-6 w-0.5 flow-connector"></div>
+                                
+                                <!-- Process -->
+                                <div id="seq-step-3" class="border-2 border-slate-400 bg-white px-8 py-4 text-sm text-center shadow-sm w-64 transition-all duration-300">
+                                    <div class="font-mono text-xs text-slate-500 mb-1">PROCESO INTERNO</div>
+                                    Propina = Importe * 0.10<br>
+                                    Total = Importe + Propina
+                                </div>
+                                <div class="h-6 w-0.5 flow-connector"></div>
+                                
+                                <!-- Output -->
+                                <div id="seq-step-4" class="shape-parallelogram border-2 border-slate-400 bg-white px-8 py-4 shadow-sm transition-all duration-300">
+                                    <div class="shape-parallelogram-content text-sm text-center font-medium">Mostrar Total</div>
+                                </div>
+                                <div class="h-6 w-0.5 flow-connector"></div>
+                                
+                                <!-- End -->
+                                <div id="seq-step-5" class="shape-oval border-2 border-slate-400 bg-white px-8 py-2 text-sm font-bold shadow-sm transition-all duration-300">Fin</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tab 2: Decision (Energy Classifier) -->
+                <div id="tab-cond" class="tab-content hidden p-6 lg:p-10 fade-in">
+                    <div class="grid grid-cols-1 lg:grid-cols-12 gap-10 h-full">
+                        <!-- Controls -->
+                        <div class="lg:col-span-4 space-y-6">
+                            <div>
+                                <h4 class="font-bold text-xl text-indigo-900 mb-2">Clasificador Energético</h4>
+                                <p class="text-sm text-slate-600">
+                                    <strong>Estructura Condicional:</strong> El programa hace una pregunta. Si la respuesta es SÍ, toma un camino. Si es NO, toma otro.
+                                </p>
+                            </div>
+                            
+                            <div class="bg-slate-50 p-6 rounded-xl border border-slate-200">
+                                <label class="block text-sm font-bold text-slate-700 mb-2">Consumo Anual (kWh)</label>
+                                <div class="flex items-center justify-between mb-2">
+                                    <span class="text-xs text-slate-500">0</span>
+                                    <span id="energy-val" class="text-2xl font-bold text-indigo-600">450</span>
+                                    <span class="text-xs text-slate-500">1000</span>
+                                </div>
+                                <input type="range" id="input-energy" min="0" max="1000" value="450" class="w-full h-3 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-indigo-600 hover:accent-indigo-500" oninput="updateEnergyDisplay()">
+                                <p class="text-xs text-slate-400 mt-2 text-center">Límite de eficiencia: 500 kWh</p>
+                            </div>
+
+                            <button onclick="runEnergyAlgorithm()" class="w-full bg-indigo-600 text-white font-bold px-4 py-4 rounded-xl hover:bg-indigo-700 transition shadow-md hover:shadow-lg flex items-center justify-center gap-2 transform active:scale-95">
+                                <span>▶ EVALUAR CONSUMO</span>
+                            </button>
+                            
+                            <div class="bg-white rounded-xl border border-slate-200 p-4 shadow-sm h-48">
+                                <div class="chart-container h-full">
+                                    <canvas id="energyChart"></canvas>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Visualization Area -->
+                        <div class="lg:col-span-8 bg-slate-50 rounded-2xl border border-dashed border-slate-300 p-8 flex flex-col items-center justify-center relative">
+                            <h5 class="absolute top-4 left-4 text-xs font-bold text-slate-400 uppercase tracking-widest bg-white px-2 py-1 rounded border border-slate-200">Diagrama de Decisión</h5>
+                            
+                            <div class="flex flex-col items-center w-full max-w-lg" id="flow-cond">
+                                <div id="cond-step-1" class="shape-oval border-2 border-slate-400 bg-white px-6 py-2 text-xs font-bold transition-all duration-300">Inicio</div>
+                                <div class="h-6 w-0.5 flow-connector"></div>
+                                
+                                <!-- Diamond -->
+                                <div id="cond-step-2" class="shape-diamond border-2 border-slate-400 bg-white w-28 h-28 flex items-center justify-center mb-6 mt-2 shadow-sm z-10 transition-all duration-300">
+                                    <div class="shape-diamond-content text-sm text-center font-bold leading-tight px-2">¿Consumo<br>< 500?</div>
+                                </div>
+                                
+                                <!-- Branches Container -->
+                                <div class="flex w-full justify-between px-4 -mt-20 pt-20 relative">
+                                    <!-- Yes Branch -->
+                                    <div class="flex flex-col items-center w-1/2 relative group">
+                                        <!-- Lines -->
+                                        <div class="absolute top-[-2.5rem] right-[50%] w-[50%] h-0.5 bg-slate-300 origin-right transition-colors" id="line-yes-h"></div>
+                                        <div class="absolute top-[-2.5rem] left-[50%] h-12 w-0.5 bg-slate-300 transition-colors" id="line-yes-v"></div>
+                                        
+                                        <span class="text-xs font-bold text-green-600 bg-green-50 px-2 py-1 rounded border border-green-100 z-10 -mt-3 shadow-sm">SÍ (Verdadero)</span>
+                                        
+                                        <div id="cond-step-3a" class="shape-parallelogram border-2 border-slate-300 bg-white px-6 py-4 mt-6 shadow-sm opacity-50 transition-all duration-300">
+                                            <div class="shape-parallelogram-content text-sm text-center font-bold text-green-700">
+                                                Mostrar:<br>"Eficiente (A)"
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- No Branch -->
+                                    <div class="flex flex-col items-center w-1/2 relative">
+                                        <!-- Lines -->
+                                        <div class="absolute top-[-2.5rem] left-[50%] w-[50%] h-0.5 bg-slate-300 transition-colors" id="line-no-h"></div>
+                                        <div class="absolute top-[-2.5rem] left-[50%] h-12 w-0.5 bg-slate-300 transition-colors" id="line-no-v"></div>
+                                        
+                                        <span class="text-xs font-bold text-red-600 bg-red-50 px-2 py-1 rounded border border-red-100 z-10 -mt-3 shadow-sm">NO (Falso)</span>
+                                        
+                                        <div id="cond-step-3b" class="shape-parallelogram border-2 border-slate-300 bg-white px-6 py-4 mt-6 shadow-sm opacity-50 transition-all duration-300">
+                                            <div class="shape-parallelogram-content text-sm text-center font-bold text-red-700">
+                                                Mostrar:<br>"Estándar (B)"
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Merge back -->
+                                <div class="mt-8 flex justify-center w-full">
+                                    <div id="cond-step-4" class="shape-oval border-2 border-slate-400 bg-white px-6 py-2 text-xs font-bold transition-all duration-300">Fin</div>
+                                </div>
+                            </div>
+                            
+                            <!-- Result Box Overlay -->
+                            <div id="output-energy-box" class="absolute bottom-8 right-8 bg-white p-4 rounded-lg shadow-lg border-l-4 border-slate-300 transition-all duration-500 opacity-0 transform translate-y-4 max-w-[200px]">
+                                <div class="text-xs font-bold text-slate-400 uppercase">Resultado</div>
+                                <div id="output-energy" class="font-bold text-lg">--</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tab 3: Loops (Polygon) -->
+                <div id="tab-loop" class="tab-content hidden p-6 lg:p-10 fade-in">
+                    <div class="grid grid-cols-1 lg:grid-cols-12 gap-10 h-full">
+                         <!-- Controls -->
+                         <div class="lg:col-span-4 space-y-6">
+                            <div>
+                                <h4 class="font-bold text-xl text-indigo-900 mb-2">Artista Geométrico</h4>
+                                <p class="text-sm text-slate-600">
+                                    <strong>Estructura Iterativa (Bucle):</strong> Repetimos instrucciones varias veces. Para un polígono regular de $n$ lados, repetimos $n$ veces.
+                                </p>
+                            </div>
+                            
+                            <div class="bg-slate-50 p-6 rounded-xl border border-slate-200">
+                                <label class="block text-sm font-bold text-slate-700 mb-2">Número de Lados (n)</label>
+                                <div class="flex items-center gap-4">
+                                    <input type="number" id="input-sides" min="3" max="12" value="5" class="flex-1 border-slate-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500 p-3 border text-lg" onchange="updatePolyInfo()">
+                                    <span class="text-sm font-mono text-slate-500 bg-white px-3 py-2 rounded border border-slate-200">Max: 12</span>
+                                </div>
+                                
+                                <div class="mt-4 bg-white p-3 rounded border border-slate-200 text-sm space-y-2">
+                                    <div class="flex justify-between">
+                                        <span class="text-slate-500">Ángulo (360/n):</span>
+                                        <span id="poly-calc-angle" class="font-mono font-bold text-indigo-600">72°</span>
+                                    </div>
+                                    <div class="flex justify-between border-t pt-2">
+                                        <span class="text-slate-500">Repeticiones:</span>
+                                        <span id="poly-calc-reps" class="font-mono font-bold text-amber-600">5 veces</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <button onclick="runPolygonAlgorithm()" id="btn-draw" class="w-full bg-indigo-600 text-white font-bold px-4 py-4 rounded-xl hover:bg-indigo-700 transition shadow-md hover:shadow-lg flex items-center justify-center gap-2 transform active:scale-95">
+                                <span>▶ DIBUJAR POLÍGONO</span>
+                            </button>
+                        </div>
+
+                        <!-- Canvas & Flowchart Split -->
+                        <div class="lg:col-span-8 grid grid-cols-1 md:grid-cols-2 gap-6">
+                            
+                            <!-- Drawing Canvas -->
+                            <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-4 flex items-center justify-center relative bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyMCIgaGVpZ2h0PSIyMCI+CjxyZWN0IHdpZHRoPSIyMCIgaGVpZ2h0PSIyMCIgZmlsbD0iI2ZmZmZmZiIvPgo8Y2lyY2xlIGN4PSIxIiBjeT0iMSIgcj0iMSIgZmlsbD0iI2UzZTdlZSIvPgo8L3N2Zz4=')]">
+                                <canvas id="polyCanvas" width="350" height="350" class="max-w-full h-auto"></canvas>
+                                <div class="absolute bottom-4 left-4 bg-white/90 px-3 py-1 rounded text-xs font-mono text-slate-500 border shadow-sm">
+                                    Lado actual: <span id="current-side-counter" class="font-bold text-indigo-600">0</span>
+                                </div>
+                            </div>
+
+                            <!-- Loop Visualizer -->
+                            <div class="bg-slate-50 rounded-2xl border border-dashed border-slate-300 p-6 flex flex-col items-center">
+                                <h5 class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4">Lógica del Bucle</h5>
+                                
+                                <div class="flex flex-col items-center w-full gap-2 text-xs" id="flow-loop">
+                                    <div id="loop-step-1" class="shape-oval border border-slate-400 px-4 py-1 bg-white text-slate-500">Inicio</div>
+                                    <div class="h-4 w-px bg-slate-300"></div>
+                                    <div id="loop-step-2" class="border border-slate-400 px-4 py-2 bg-white text-center rounded w-full max-w-[180px] shadow-sm">
+                                        Calcular Ángulo = 360/n
+                                    </div>
+                                    <div class="h-4 w-px bg-slate-300"></div>
+                                    
+                                    <!-- Loop Container -->
+                                    <div class="border-2 border-amber-400 rounded-lg p-3 bg-amber-50 w-full max-w-[220px] relative transition-all duration-200" id="loop-container">
+                                        <div class="absolute -top-3 left-4 bg-amber-100 text-amber-700 px-2 py-0.5 rounded text-[10px] font-bold border border-amber-200">
+                                            REPETIR <span id="loop-label-n">n</span> VECES
+                                        </div>
+                                        
+                                        <div class="flex flex-col gap-2 mt-1">
+                                            <div id="loop-step-3" class="bg-white border border-slate-300 p-2 rounded text-center shadow-sm transition-all duration-200">
+                                                🖌️ Mover Lápiz (Dibujar)
+                                            </div>
+                                            <div class="h-2 w-px bg-slate-300 mx-auto"></div>
+                                            <div id="loop-step-4" class="bg-white border border-slate-300 p-2 rounded text-center shadow-sm transition-all duration-200">
+                                                🔄 Girar (Ángulo)
+                                            </div>
+                                        </div>
+                                        
+                                        <!-- Loop Arrow -->
+                                        <div class="absolute bottom-4 -right-3 w-4 h-16 border-r-2 border-b-2 border-t-2 border-amber-400 rounded-r-lg border-l-0" style="top: 20px; height: 60px;"></div>
+                                    </div>
+
+                                    <div class="h-4 w-px bg-slate-300"></div>
+                                    <div id="loop-step-5" class="shape-oval border border-slate-400 px-4 py-1 bg-white text-slate-500">Fin</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 3: Quiz -->
+        <section id="quiz" class="scroll-mt-24">
+            <div class="bg-white rounded-2xl shadow-xl border border-slate-200 overflow-hidden">
+                <div class="bg-indigo-900 p-8 text-white">
+                    <h3 class="text-2xl font-bold">3. Comprobación de Conocimientos</h3>
+                    <p class="text-indigo-200 opacity-80 mt-2">Responde estas 3 preguntas para asegurar que dominas los conceptos.</p>
+                </div>
+                
+                <div class="p-8 space-y-8">
+                    <!-- Q1 -->
+                    <div class="quiz-item">
+                        <p class="font-bold text-slate-800 text-lg mb-4">1. En un diagrama de flujo, ¿qué figura geométrica se usa para una condición (SI/NO)?</p>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <button onclick="checkAnswer(this, false, 'El rectángulo representa procesos o cálculos.')" class="p-4 rounded-lg border-2 border-slate-100 hover:border-indigo-200 hover:bg-indigo-50 transition text-left text-slate-600 font-medium">
+                                Rectángulo
+                            </button>
+                            <button onclick="checkAnswer(this, true, '¡Correcto! El rombo divide el flujo en dos caminos.')" class="p-4 rounded-lg border-2 border-slate-100 hover:border-indigo-200 hover:bg-indigo-50 transition text-left text-slate-600 font-medium">
+                                Rombo
+                            </button>
+                            <button onclick="checkAnswer(this, false, 'El óvalo marca el inicio o fin.')" class="p-4 rounded-lg border-2 border-slate-100 hover:border-indigo-200 hover:bg-indigo-50 transition text-left text-slate-600 font-medium">
+                                Óvalo
+                            </button>
+                        </div>
+                        <div class="feedback hidden mt-3 text-sm font-bold p-3 rounded-lg"></div>
+                    </div>
+
+                    <hr class="border-slate-100">
+
+                    <!-- Q2 -->
+                    <div class="quiz-item">
+                        <p class="font-bold text-slate-800 text-lg mb-4">2. Para el reto de los polígonos, ¿cuál es la fórmula del ángulo de giro?</p>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <button onclick="checkAnswer(this, false, 'Esto daría un ángulo demasiado grande.')" class="p-4 rounded-lg border-2 border-slate-100 hover:border-indigo-200 hover:bg-indigo-50 transition text-left text-slate-600 font-medium">
+                                360 * n
+                            </button>
+                            <button onclick="checkAnswer(this, false, '180 grados es para triángulos internos, no el giro externo.')" class="p-4 rounded-lg border-2 border-slate-100 hover:border-indigo-200 hover:bg-indigo-50 transition text-left text-slate-600 font-medium">
+                                180 / n
+                            </button>
+                            <button onclick="checkAnswer(this, true, '¡Exacto! Una vuelta completa (360) dividida entre los lados.')" class="p-4 rounded-lg border-2 border-slate-100 hover:border-indigo-200 hover:bg-indigo-50 transition text-left text-slate-600 font-medium">
+                                360 / n
+                            </button>
+                        </div>
+                        <div class="feedback hidden mt-3 text-sm font-bold p-3 rounded-lg"></div>
+                    </div>
+
+                    <hr class="border-slate-100">
+
+                    <!-- Q3 -->
+                    <div class="quiz-item">
+                        <p class="font-bold text-slate-800 text-lg mb-4">3. ¿Qué bloque de Scratch usarías para obtener la "Entrada" (Input) de un usuario?</p>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <button onclick="checkAnswer(this, true, '¡Sí! Este bloque pausa el programa y espera datos.')" class="p-4 rounded-lg border-2 border-slate-100 hover:border-indigo-200 hover:bg-indigo-50 transition text-left text-slate-600 font-medium">
+                                Preguntar y esperar
+                            </button>
+                            <button onclick="checkAnswer(this, false, 'Esto es para mostrar información (Salida).')" class="p-4 rounded-lg border-2 border-slate-100 hover:border-indigo-200 hover:bg-indigo-50 transition text-left text-slate-600 font-medium">
+                                Decir
+                            </button>
+                            <button onclick="checkAnswer(this, false, 'Esto es para mover objetos.')" class="p-4 rounded-lg border-2 border-slate-100 hover:border-indigo-200 hover:bg-indigo-50 transition text-left text-slate-600 font-medium">
+                                Mover 10 pasos
+                            </button>
+                        </div>
+                        <div class="feedback hidden mt-3 text-sm font-bold p-3 rounded-lg"></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="bg-white border-t border-slate-200 py-12 mt-12">
+        <div class="max-w-7xl mx-auto px-4 text-center">
+            <p class="text-slate-500 mb-2">Aplicación educativa basada en la guía: <span class="text-slate-800 font-bold">Diagrama de flujos y pseudocódigo</span></p>
+            <p class="text-slate-400 text-sm">© 2023 Laboratorio de Algoritmos. Uso didáctico.</p>
+        </div>
+    </footer>
+
+    <script>
+        // --- Initialization & State ---
+        let energyChartInstance = null;
+
+        // --- Navigation ---
+        function scrollToSection(id) {
+            document.getElementById(id).scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+
+        function switchTab(tabId) {
+            // Hide all tabs
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+            // Show selected
+            document.getElementById(tabId).classList.remove('hidden');
+            
+            // Update button styles
+            document.querySelectorAll('button[id^="btn-tab"]').forEach(btn => {
+                btn.classList.remove('border-indigo-600', 'text-indigo-600', 'bg-white');
+                btn.classList.add('border-transparent', 'text-slate-500');
+            });
+            const activeBtn = document.getElementById('btn-' + tabId);
+            activeBtn.classList.remove('border-transparent', 'text-slate-500');
+            activeBtn.classList.add('border-indigo-600', 'text-indigo-600', 'bg-white');
+
+            // Initialize Energy Chart if switching to that tab
+            if (tabId === 'tab-cond') {
+                setTimeout(() => {
+                    initEnergyChart();
+                    updateEnergyDisplay(); // Ensure visual sync
+                }, 50); // Small delay for DOM layout
+            }
+            // Update Poly info if switching
+            if (tabId === 'tab-loop') {
+                 updatePolyInfo();
+            }
+        }
+
+        function toggleCard(id) {
+            const el = document.getElementById(id);
+            if (el.classList.contains('hidden')) {
+                el.classList.remove('hidden');
+            } else {
+                el.classList.add('hidden');
+            }
+        }
+
+        // --- Helper: Async Animation Pauses ---
+        const wait = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+        
+        async function highlightNode(id, containerId) {
+            // Remove previous active classes in this container
+            const container = document.getElementById(containerId);
+            container.querySelectorAll('.active-step').forEach(el => el.classList.remove('active-step'));
+            
+            const el = document.getElementById(id);
+            if(el) {
+                el.classList.add('active-step');
+                el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            }
+            await wait(800); // Wait time for user to see the step
+        }
+
+        function clearHighlights(containerId) {
+            document.getElementById(containerId).querySelectorAll('.active-step').forEach(el => el.classList.remove('active-step'));
+        }
+
+        // --- RETO 1: Tip Calculator Logic ---
+        async function runTipAlgorithm() {
+            const input = parseFloat(document.getElementById('input-tip').value);
+            const outputEl = document.getElementById('output-tip');
+            const detailEl = document.getElementById('output-tip-detail');
+            const containerId = 'flow-seq';
+            
+            if(isNaN(input)) { alert("Por favor ingresa un número válido"); return; }
+
+            // Reset UI
+            outputEl.innerText = "--";
+            detailEl.innerText = "Procesando...";
+            
+            // Step 1: Start
+            await highlightNode('seq-step-1', containerId);
+            
+            // Step 2: Read Input
+            await highlightNode('seq-step-2', containerId);
+            
+            // Step 3: Process
+            await highlightNode('seq-step-3', containerId);
+            const tip = input * 0.10;
+            const total = input + tip;
+            detailEl.innerText = `Cálculo: ${input} + ${tip.toFixed(2)} (10%)`;
+
+            // Step 4: Show Output
+            await highlightNode('seq-step-4', containerId);
+            outputEl.innerText = `$${total.toFixed(2)}`;
+            detailEl.innerText = "¡Cálculo finalizado!";
+
+            // Step 5: End
+            await highlightNode('seq-step-5', containerId);
+            await wait(1000);
+            clearHighlights(containerId);
+        }
+
+        // --- RETO 2: Energy Classifier Logic ---
+        function initEnergyChart() {
+            if (energyChartInstance) return; // Already created
+            
+            const ctx = document.getElementById('energyChart').getContext('2d');
+            energyChartInstance = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['Tu Consumo', 'Límite (500)'],
+                    datasets: [{
+                        label: 'kWh',
+                        data: [450, 500],
+                        backgroundColor: ['#4F46E5', '#cbd5e1'],
+                        borderRadius: 6,
+                        borderSkipped: false
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    animation: { duration: 400 },
+                    scales: {
+                        y: { beginAtZero: true, max: 1000, grid: { display: false } },
+                        x: { grid: { display: false } }
+                    },
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: { enabled: true }
+                    }
+                }
+            });
+        }
+
+        function updateEnergyDisplay() {
+            const val = parseInt(document.getElementById('input-energy').value);
+            document.getElementById('energy-val').innerText = val;
+            
+            if (energyChartInstance) {
+                energyChartInstance.data.datasets[0].data[0] = val;
+                // Color logic: Green if < 500, Red if >= 500
+                if (val < 500) {
+                    energyChartInstance.data.datasets[0].backgroundColor = ['#16a34a', '#cbd5e1']; // Green
+                } else {
+                    energyChartInstance.data.datasets[0].backgroundColor = ['#dc2626', '#cbd5e1']; // Red
+                }
+                energyChartInstance.update();
+            }
+        }
+
+        async function runEnergyAlgorithm() {
+            const val = parseInt(document.getElementById('input-energy').value);
+            const outputBox = document.getElementById('output-energy-box');
+            const outputText = document.getElementById('output-energy');
+            const containerId = 'flow-cond';
+            
+            // Reset
+            outputBox.classList.add('opacity-0', 'translate-y-4');
+            outputBox.classList.remove('border-green-500', 'border-red-500');
+            clearHighlights(containerId);
+
+            // Step 1: Start
+            await highlightNode('cond-step-1', containerId);
+            
+            // Step 2: Decision
+            await highlightNode('cond-step-2', containerId);
+            
+            // Animate Logic Branches
+            const isEfficient = val < 500;
+            
+            if (isEfficient) {
+                // Visualize Yes Path
+                document.getElementById('line-yes-h').classList.add('bg-green-500');
+                document.getElementById('line-yes-v').classList.add('bg-green-500');
+                await wait(400);
+                
+                // Show Result Node
+                const node = document.getElementById('cond-step-3a');
+                node.classList.remove('opacity-50');
+                await highlightNode('cond-step-3a', containerId);
+                
+                // Show Result Box
+                outputText.innerText = "A (Eficiente)";
+                outputText.className = "font-bold text-2xl text-green-600";
+                outputBox.classList.add('border-green-500');
+            } else {
+                // Visualize No Path
+                document.getElementById('line-no-h').classList.add('bg-red-500');
+                document.getElementById('line-no-v').classList.add('bg-red-500');
+                await wait(400);
+                
+                // Show Result Node
+                const node = document.getElementById('cond-step-3b');
+                node.classList.remove('opacity-50');
+                await highlightNode('cond-step-3b', containerId);
+                
+                // Show Result Box
+                outputText.innerText = "B (Estándar)";
+                outputText.className = "font-bold text-2xl text-red-600";
+                outputBox.classList.add('border-red-500');
+            }
+            
+            outputBox.classList.remove('opacity-0', 'translate-y-4');
+            
+            // Step 4: End
+            await highlightNode('cond-step-4', containerId);
+
+            // Cleanup reset delay
+            setTimeout(() => {
+                document.querySelectorAll('[id^="line-"]').forEach(el => {
+                    el.classList.remove('bg-green-500', 'bg-red-500');
+                    el.classList.add('bg-slate-300');
+                });
+                document.getElementById('cond-step-3a').classList.add('opacity-50');
+                document.getElementById('cond-step-3b').classList.add('opacity-50');
+                clearHighlights(containerId);
+            }, 3000);
+        }
+
+        // --- RETO 3: Polygon Logic ---
+        function updatePolyInfo() {
+            const n = parseInt(document.getElementById('input-sides').value);
+            document.getElementById('poly-calc-angle').innerText = (360 / n).toFixed(1) + "°";
+            document.getElementById('poly-calc-reps').innerText = n + " veces";
+            document.getElementById('loop-label-n').innerText = n;
+        }
+
+        async function runPolygonAlgorithm() {
+            const btn = document.getElementById('btn-draw');
+            btn.disabled = true;
+            btn.classList.add('opacity-50');
+            
+            const n = parseInt(document.getElementById('input-sides').value);
+            const canvas = document.getElementById('polyCanvas');
+            const ctx = canvas.getContext('2d');
+            const width = canvas.width;
+            const height = canvas.height;
+            const containerId = 'flow-loop';
+            const counterEl = document.getElementById('current-side-counter');
+            
+            // Clear
+            ctx.clearRect(0, 0, width, height);
+            counterEl.innerText = "0";
+
+            // Flow: Start
+            await highlightNode('loop-step-1', containerId);
+
+            // Flow: Calc
+            await highlightNode('loop-step-2', containerId);
+            const angleDeg = 360 / n;
+            const angleRad = (2 * Math.PI) / n;
+            
+            // Geometry Math
+            const radius = 100;
+            const centerX = width / 2;
+            const centerY = height / 2;
+            
+            // We need to calculate vertices first to animate line by line
+            // Start at top (-PI/2)
+            const startAngle = -Math.PI / 2;
+            
+            ctx.beginPath();
+            ctx.lineWidth = 4;
+            ctx.lineCap = 'round';
+            ctx.lineJoin = 'round';
+            ctx.strokeStyle = '#4F46E5';
+            
+            // Move to first point
+            let currentX = centerX + radius * Math.cos(startAngle);
+            let currentY = centerY + radius * Math.sin(startAngle);
+            ctx.moveTo(currentX, currentY);
+
+            // Loop Animation
+            const loopContainer = document.getElementById('loop-container');
+            loopContainer.classList.add('ring-4', 'ring-amber-200'); // Highlight whole block
+
+            for (let i = 1; i <= n; i++) {
+                counterEl.innerText = i;
+                
+                // Highlight: Move (Draw)
+                await highlightNode('loop-step-3', containerId);
+                
+                // Calculate next point
+                const nextAngle = startAngle + (i * angleRad);
+                const nextX = centerX + radius * Math.cos(nextAngle);
+                const nextY = centerY + radius * Math.sin(nextAngle);
+                
+                // Draw line animation
+                const steps = 10;
+                const dx = (nextX - currentX) / steps;
+                const dy = (nextY - currentY) / steps;
+                
+                for(let s=0; s<steps; s++) {
+                    ctx.lineTo(currentX + dx, currentY + dy);
+                    ctx.stroke();
+                    currentX += dx;
+                    currentY += dy;
+                    await wait(20); // Smooth draw
+                }
+                
+                // Highlight: Turn
+                await highlightNode('loop-step-4', containerId);
+                
+                // Visual feedback of turn? (Optional, skipping for simplicity)
+            }
+            
+            ctx.closePath();
+            loopContainer.classList.remove('ring-4', 'ring-amber-200');
+
+            // Flow: End
+            await highlightNode('loop-step-5', containerId);
+            
+            // Reset
+            btn.disabled = false;
+            btn.classList.remove('opacity-50');
+            clearHighlights(containerId);
+        }
+
+        // --- Quiz Logic ---
+        function checkAnswer(btn, isCorrect, feedbackText) {
+            const container = btn.parentElement;
+            const feedbackEl = container.nextElementSibling;
+            
+            // Disable all buttons in this group
+            container.querySelectorAll('button').forEach(b => {
+                b.disabled = true;
+                if(b === btn) {
+                    // Chosen button
+                    if(isCorrect) {
+                        b.classList.remove('border-slate-100', 'hover:bg-indigo-50');
+                        b.classList.add('bg-green-100', 'border-green-500', 'text-green-800');
+                    } else {
+                        b.classList.remove('border-slate-100', 'hover:bg-indigo-50');
+                        b.classList.add('bg-red-100', 'border-red-500', 'text-red-800');
+                    }
+                }
+            });
+
+            feedbackEl.innerText = feedbackText;
+            feedbackEl.classList.remove('hidden');
+            if(isCorrect) {
+                feedbackEl.classList.add('bg-green-50', 'text-green-700');
+            } else {
+                feedbackEl.classList.add('bg-red-50', 'text-red-700');
+            }
+        }
+    </script>
+</body>
+</html>
