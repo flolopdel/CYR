@@ -1,0 +1,595 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Guía Interactiva: Simulador de Fútbol en Scratch</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .scratch-block {
+            background-color: #f59e0b; /* Control/Events - Amber */
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            font-weight: 600;
+            display: inline-block;
+            margin: 0.25rem 0;
+            box-shadow: 2px 2px 0px rgba(0,0,0,0.1);
+            cursor: default;
+        }
+        .scratch-block.motion { background-color: #3b82f6; } /* Motion - Blue */
+        .scratch-block.looks { background-color: #8b5cf6; } /* Looks - Purple */
+        .scratch-block.variable { background-color: #f97316; } /* Variables - Orange */
+        .scratch-block.sensing { background-color: #06b6d4; } /* Sensing - Cyan */
+        
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 300px;
+            max-height: 400px;
+        }
+        @media (min-width: 768px) {
+            .chart-container { height: 350px; }
+        }
+        
+        .nav-btn.active {
+            background-color: #10b981; /* Emerald 500 */
+            color: white;
+            border-color: #10b981;
+        }
+    </style>
+    <!-- Chosen Palette: Stone & Emerald (Warm Neutral Background with Soccer Pitch Accents) -->
+    <!-- Application Structure Plan: The app is divided into three main phases: 'Planificación' (Architecture), 'Desarrollo' (Step-by-step Logic), and 'Simulación' (Live Testing). This structure allows the user to first understand the components, then see the code logic, and finally test the game mechanics in a data-driven environment. This reinforces learning by doing. -->
+    <!-- Visualization & Content Choices: 
+         1. Flowcharts built with HTML/CSS Grid: To visualize the Menu and Game Loop logic without static images.
+         2. Interactive 'Scratch Blocks': CSS-styled divs that mimic the Scratch interface to make the text instructions instantly recognizable.
+         3. Live Simulator & Chart.js: A real-time implementation of the game logic described in the text. As the user 'plays' the simulator, a Chart.js bar chart tracks 'Goals vs Misses' to visualize the probability and variable tracking mentioned in the guide.
+         4. CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+</head>
+<body class="bg-stone-50 text-stone-800">
+
+    <!-- Header -->
+    <header class="bg-emerald-900 text-white shadow-lg">
+        <div class="container mx-auto px-4 py-8 text-center">
+            <h1 class="text-3xl md:text-4xl font-bold mb-2">⚽ Guía de Diseño: Scratch Fútbol</h1>
+            <p class="text-emerald-100 max-w-2xl mx-auto">Una experiencia interactiva para aprender a programar un juego de Penaltis y Pases paso a paso. Explora la lógica, organiza tus variables y simula el resultado.</p>
+        </div>
+    </header>
+
+    <!-- Navigation -->
+    <nav class="sticky top-0 z-50 bg-white/90 backdrop-blur-sm border-b border-stone-200 shadow-sm">
+        <div class="container mx-auto px-4">
+            <div class="flex overflow-x-auto justify-center space-x-2 py-4">
+                <button onclick="switchTab('planificacion')" id="btn-planificacion" class="nav-btn active px-6 py-2 rounded-full border border-stone-300 font-semibold transition hover:bg-emerald-50 whitespace-nowrap">1. Planificación</button>
+                <button onclick="switchTab('penaltis')" id="btn-penaltis" class="nav-btn px-6 py-2 rounded-full border border-stone-300 font-semibold transition hover:bg-emerald-50 whitespace-nowrap">2. Lógica Penaltis</button>
+                <button onclick="switchTab('pases')" id="btn-pases" class="nav-btn px-6 py-2 rounded-full border border-stone-300 font-semibold transition hover:bg-emerald-50 whitespace-nowrap">3. Lógica Pases</button>
+                <button onclick="switchTab('simulador')" id="btn-simulador" class="nav-btn px-6 py-2 rounded-full border border-stone-300 font-semibold transition hover:bg-emerald-50 whitespace-nowrap">4. Simulador en Vivo</button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content Container -->
+    <main class="container mx-auto px-4 py-8 min-h-screen">
+
+        <!-- SECTION 1: PLANIFICACIÓN -->
+        <section id="planificacion" class="tab-content block animate-fade-in">
+            <div class="max-w-4xl mx-auto">
+                <div class="bg-white p-6 rounded-xl shadow-md mb-8 border-l-4 border-emerald-500">
+                    <h2 class="text-2xl font-bold mb-4 text-emerald-800">Arquitectura del Proyecto</h2>
+                    <p class="mb-4 text-stone-600">Antes de arrastrar bloques, es crucial definir los cimientos. Aquí visualizamos las variables y objetos que la guía recomienda crear.</p>
+                </div>
+
+                <div class="grid md:grid-cols-2 gap-8">
+                    <!-- Variables Card -->
+                    <div class="bg-white p-6 rounded-xl shadow-sm border border-stone-200">
+                        <h3 class="text-xl font-bold mb-4 flex items-center">
+                            <span class="bg-orange-100 text-orange-600 p-2 rounded-lg mr-3">x</span> Variables Globales
+                        </h3>
+                        <ul class="space-y-3">
+                            <li class="flex items-center justify-between p-3 bg-stone-50 rounded-lg">
+                                <span class="font-mono text-orange-600 font-bold">Puntos</span>
+                                <span class="text-sm text-stone-500">Acumula goles o pases correctos</span>
+                            </li>
+                            <li class="flex items-center justify-between p-3 bg-stone-50 rounded-lg">
+                                <span class="font-mono text-orange-600 font-bold">Intentos</span>
+                                <span class="text-sm text-stone-500">Contador para fin del juego</span>
+                            </li>
+                            <li class="flex items-center justify-between p-3 bg-stone-50 rounded-lg">
+                                <span class="font-mono text-orange-600 font-bold">Elección</span>
+                                <span class="text-sm text-stone-500">Guarda modo (1 o 2)</span>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <!-- Objects Card -->
+                    <div class="bg-white p-6 rounded-xl shadow-sm border border-stone-200">
+                        <h3 class="text-xl font-bold mb-4 flex items-center">
+                            <span class="bg-blue-100 text-blue-600 p-2 rounded-lg mr-3">◈</span> Objetos (Sprites)
+                        </h3>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div class="text-center p-4 border border-dashed border-stone-300 rounded-lg">
+                                <div class="text-2xl mb-2">⚽</div>
+                                <div class="font-bold">Balón</div>
+                                <div class="text-xs text-stone-500">Protagonista</div>
+                            </div>
+                            <div class="text-center p-4 border border-dashed border-stone-300 rounded-lg">
+                                <div class="text-2xl mb-2">🧤</div>
+                                <div class="font-bold">Portero</div>
+                                <div class="text-xs text-stone-500">Enemigo (Modo 1)</div>
+                            </div>
+                            <div class="text-center p-4 border border-dashed border-stone-300 rounded-lg">
+                                <div class="text-2xl mb-2">🏃</div>
+                                <div class="font-bold">Jugador 2</div>
+                                <div class="text-xs text-stone-500">Aliado (Modo 2)</div>
+                            </div>
+                            <div class="text-center p-4 border border-dashed border-stone-300 rounded-lg">
+                                <div class="text-2xl mb-2">🥅</div>
+                                <div class="font-bold">Escenario</div>
+                                <div class="text-xs text-stone-500">Campo de Fútbol</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Menu Logic Flow -->
+                <div class="mt-8 bg-white p-6 rounded-xl shadow-sm border border-stone-200">
+                    <h3 class="text-xl font-bold mb-6 text-center">Flujo del Menú Principal</h3>
+                    <div class="flex flex-col md:flex-row items-center justify-center space-y-4 md:space-y-0 md:space-x-4">
+                        <div class="bg-green-600 text-white p-4 rounded-lg text-center w-full md:w-auto">
+                            <div class="font-bold text-sm uppercase mb-1">Inicio</div>
+                            <div>Bandera Verde 🏁</div>
+                        </div>
+                        <div class="hidden md:block text-stone-400 text-2xl">→</div>
+                        <div class="text-stone-400 text-2xl md:hidden">↓</div>
+                        
+                        <div class="bg-blue-500 text-white p-4 rounded-lg text-center w-full md:w-auto">
+                            <div class="font-bold text-sm uppercase mb-1">Pregunta</div>
+                            <div>¿1: Penaltis o 2: Pases?</div>
+                        </div>
+                        
+                        <div class="hidden md:block text-stone-400 text-2xl">→</div>
+                        <div class="text-stone-400 text-2xl md:hidden">↓</div>
+
+                        <div class="flex flex-col space-y-2 w-full md:w-auto">
+                            <div class="bg-amber-500 text-white p-3 rounded-lg text-center">
+                                Si respuesta = 1 <br> <span class="opacity-75 text-sm">Enviar "Juego_Penaltis"</span>
+                            </div>
+                            <div class="bg-amber-500 text-white p-3 rounded-lg text-center">
+                                Si respuesta = 2 <br> <span class="opacity-75 text-sm">Enviar "Juego_Pases"</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION 2: LÓGICA PENALTIS -->
+        <section id="penaltis" class="tab-content hidden animate-fade-in">
+            <div class="max-w-4xl mx-auto">
+                <div class="bg-white p-6 rounded-xl shadow-md mb-8 border-l-4 border-blue-500">
+                    <h2 class="text-2xl font-bold mb-4 text-blue-800">Modo 1: Portero y Lanzamiento</h2>
+                    <p class="mb-4 text-stone-600">Este escenario requiere coordinar el movimiento automático del portero con la interacción del usuario (ratón) para el balón.</p>
+                </div>
+
+                <div class="grid gap-6">
+                    <!-- Step 1: Init -->
+                    <div class="bg-white border border-stone-200 rounded-lg overflow-hidden">
+                        <div class="bg-stone-100 px-6 py-3 border-b border-stone-200 font-semibold flex justify-between">
+                            <span>1. Inicialización</span>
+                            <span class="text-stone-400 text-sm">Al recibir mensaje</span>
+                        </div>
+                        <div class="p-6">
+                            <p class="mb-4 text-stone-600">Es vital reiniciar los contadores al empezar una nueva partida para no acumular puntos de juegos anteriores.</p>
+                            <div class="font-mono text-sm bg-stone-900 text-stone-100 p-4 rounded-lg shadow-inner">
+                                <div class="scratch-block">Al recibir [Juego_Penaltis]</div><br>
+                                <div class="scratch-block variable">dar a [Puntos] el valor 0</div><br>
+                                <div class="scratch-block variable">dar a [Intentos] el valor 0</div><br>
+                                <div class="scratch-block looks">mostrar</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Step 2: Goalie AI -->
+                    <div class="bg-white border border-stone-200 rounded-lg overflow-hidden">
+                        <div class="bg-stone-100 px-6 py-3 border-b border-stone-200 font-semibold flex justify-between">
+                            <span>2. IA del Portero</span>
+                            <span class="text-stone-400 text-sm">Objeto Portero</span>
+                        </div>
+                        <div class="p-6">
+                            <p class="mb-4 text-stone-600">El portero actúa como un obstáculo móvil. Usamos un bucle infinito para mantenerlo en movimiento constante.</p>
+                            <div class="font-mono text-sm bg-stone-900 text-stone-100 p-4 rounded-lg shadow-inner">
+                                <div class="scratch-block">por siempre</div><br>
+                                <div class="ml-4 scratch-block motion">deslizar en (1) segs a x: (aleatorio) y: (-50)</div><br>
+                                <div class="ml-4 scratch-block motion">rebotar si toca un borde</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Step 3: Shooting Logic -->
+                    <div class="bg-white border border-stone-200 rounded-lg overflow-hidden">
+                        <div class="bg-stone-100 px-6 py-3 border-b border-stone-200 font-semibold flex justify-between">
+                            <span>3. Mecánica de Disparo</span>
+                            <span class="text-stone-400 text-sm">Objeto Balón</span>
+                        </div>
+                        <div class="p-6 grid md:grid-cols-2 gap-6">
+                            <div>
+                                <h4 class="font-bold text-stone-700 mb-2">Acción</h4>
+                                <ul class="list-disc list-inside text-stone-600 space-y-2">
+                                    <li>El balón sigue el ratón horizontalmente antes de chutar.</li>
+                                    <li>Al hacer clic, se mueve hacia la portería (eje Y).</li>
+                                    <li>Se incrementa el contador de <code>Intentos</code>.</li>
+                                </ul>
+                            </div>
+                            <div>
+                                <h4 class="font-bold text-stone-700 mb-2">Condiciones (Sensores)</h4>
+                                <ul class="space-y-2">
+                                    <li class="bg-red-50 text-red-700 p-2 rounded border border-red-200">
+                                        <strong>Si toca [Portero]:</strong> Decir "¡Parada!"
+                                    </li>
+                                    <li class="bg-green-50 text-green-700 p-2 rounded border border-green-200">
+                                        <strong>Si toca [Color Portería] Y NO [Portero]:</strong> Sumar 1 a Puntos.
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION 3: LÓGICA PASES -->
+        <section id="pases" class="tab-content hidden animate-fade-in">
+             <div class="max-w-4xl mx-auto">
+                <div class="bg-white p-6 rounded-xl shadow-md mb-8 border-l-4 border-purple-500">
+                    <h2 class="text-2xl font-bold mb-4 text-purple-800">Modo 2: Pases entre Jugadores</h2>
+                    <p class="mb-4 text-stone-600">Este modo cambia la dinámica: en lugar de evitar un obstáculo, el objetivo es interceptar el balón con un aliado.</p>
+                </div>
+
+                <div class="flex flex-col space-y-6">
+                    <!-- Diagram of Logic -->
+                    <div class="bg-white p-6 rounded-xl shadow-sm border border-stone-200 text-center">
+                         <h3 class="font-bold text-stone-700 mb-4">Esquema de Interacción</h3>
+                         <div class="flex justify-around items-center py-8 bg-green-50 rounded-lg border border-green-100">
+                             <div class="text-center">
+                                 <div class="text-4xl">🧍</div>
+                                 <div class="font-bold text-sm mt-2">Jugador 1</div>
+                                 <div class="text-xs text-stone-500">Lanzador (Fijo)</div>
+                             </div>
+                             
+                             <div class="flex-1 px-4">
+                                <div class="h-1 bg-stone-300 relative my-2">
+                                    <div class="absolute -top-3 left-1/2 transform -translate-x-1/2 text-2xl">⚽</div>
+                                </div>
+                                <div class="text-xs font-mono text-purple-600 font-bold">Tecla ESPACIO</div>
+                             </div>
+
+                             <div class="text-center">
+                                 <div class="text-4xl animate-pulse">🏃</div>
+                                 <div class="font-bold text-sm mt-2">Jugador 2</div>
+                                 <div class="text-xs text-stone-500">Receptor (Ratón)</div>
+                             </div>
+                         </div>
+                    </div>
+
+                    <!-- Logic Steps -->
+                    <div class="grid md:grid-cols-2 gap-6">
+                        <div class="bg-white p-6 rounded-xl shadow-sm border border-stone-200">
+                            <h3 class="text-lg font-bold mb-3">Movimiento del Balón</h3>
+                            <p class="text-stone-600 text-sm mb-4">El balón viaja desde la posición inicial hacia la posición actual del Jugador 2.</p>
+                            <div class="font-mono text-xs bg-stone-900 text-stone-100 p-3 rounded">
+                                <div class="scratch-block">si tecla [espacio] presionada</div><br>
+                                <div class="scratch-block motion">deslizar en (1) segs a [Jugador 2]</div>
+                            </div>
+                        </div>
+
+                        <div class="bg-white p-6 rounded-xl shadow-sm border border-stone-200">
+                            <h3 class="text-lg font-bold mb-3">Validación del Pase</h3>
+                            <p class="text-stone-600 text-sm mb-4">Debemos verificar si el balón realmente tocó al jugador destino al finalizar el movimiento.</p>
+                            <div class="font-mono text-xs bg-stone-900 text-stone-100 p-3 rounded">
+                                <div class="scratch-block sensing">¿tocando [Jugador 2]?</div><br>
+                                <div class="ml-4 scratch-block variable">cambiar [Puntos] por (1)</div>
+                                <div class="scratch-block motion">ir a [Jugador 1]</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION 4: SIMULADOR (Data & Visualization) -->
+        <section id="simulador" class="tab-content hidden animate-fade-in">
+            <div class="max-w-5xl mx-auto">
+                <div class="bg-white p-6 rounded-xl shadow-md mb-8 border-l-4 border-amber-500">
+                    <h2 class="text-2xl font-bold mb-4 text-amber-800">Simulador de Lógica en Vivo</h2>
+                    <p class="mb-4 text-stone-600">Prueba cómo funcionan las variables y las condiciones descritas en la guía. Interactúa con el simulador y observa cómo se generan los datos en tiempo real.</p>
+                </div>
+
+                <div class="grid lg:grid-cols-3 gap-8">
+                    <!-- Game Interface -->
+                    <div class="lg:col-span-1 bg-stone-800 rounded-xl p-6 text-white shadow-xl relative overflow-hidden">
+                        <!-- Abstract Field Background -->
+                        <div class="absolute inset-0 opacity-10 bg-[radial-gradient(circle,_var(--tw-gradient-stops))] from-white to-transparent"></div>
+                        
+                        <div class="relative z-10">
+                            <div class="flex justify-between mb-6">
+                                <div class="bg-stone-700 px-3 py-1 rounded">
+                                    <div class="text-xs text-stone-400">PUNTOS</div>
+                                    <div id="sim-score" class="text-2xl font-mono text-green-400 font-bold">0</div>
+                                </div>
+                                <div class="bg-stone-700 px-3 py-1 rounded">
+                                    <div class="text-xs text-stone-400">INTENTOS</div>
+                                    <div id="sim-attempts" class="text-2xl font-mono text-orange-400 font-bold">0</div>
+                                </div>
+                            </div>
+
+                            <div id="game-screen" class="h-48 bg-emerald-700/50 rounded-lg border-2 border-emerald-600 flex flex-col items-center justify-center mb-6 relative">
+                                <div id="message-log" class="text-center font-bold text-shadow px-2">Selecciona un juego</div>
+                                <!-- Simple CSS visual elements for simulation -->
+                                <div id="sim-ball" class="w-4 h-4 bg-white rounded-full mt-4 transition-all duration-500"></div>
+                            </div>
+
+                            <div id="controls-menu" class="grid gap-2">
+                                <button onclick="startGame(1)" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-2 px-4 rounded transition">Modo Penaltis</button>
+                                <button onclick="startGame(2)" class="w-full bg-purple-600 hover:bg-purple-500 text-white font-bold py-2 px-4 rounded transition">Modo Pases</button>
+                            </div>
+
+                            <div id="controls-game" class="hidden grid gap-2">
+                                <button id="action-btn" onclick="performAction()" class="w-full bg-amber-500 hover:bg-amber-400 text-white font-bold py-3 px-4 rounded shadow-lg transform active:scale-95 transition">
+                                    CHUTAR / PASAR
+                                </button>
+                                <button onclick="resetGame()" class="w-full bg-stone-600 hover:bg-stone-500 text-sm py-2 rounded mt-2">Volver al Menú</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Data Visualization -->
+                    <div class="lg:col-span-2 bg-white p-6 rounded-xl shadow-sm border border-stone-200">
+                        <div class="flex justify-between items-center mb-6">
+                            <h3 class="text-lg font-bold text-stone-700">Análisis de Rendimiento</h3>
+                            <span class="text-xs bg-stone-100 text-stone-500 px-2 py-1 rounded">Datos en tiempo real</span>
+                        </div>
+                        
+                        <!-- Chart Container -->
+                        <div class="chart-container">
+                            <canvas id="gameStatsChart"></canvas>
+                        </div>
+                        
+                        <div class="mt-4 grid grid-cols-2 gap-4 text-sm">
+                            <div class="p-3 bg-green-50 rounded border border-green-100">
+                                <span class="block text-green-800 font-bold">Tasa de Éxito</span>
+                                <span id="success-rate" class="text-2xl font-mono text-green-600">0%</span>
+                                <p class="text-xs text-stone-500 mt-1">Calculado: (Puntos / Intentos) * 100</p>
+                            </div>
+                            <div class="p-3 bg-orange-50 rounded border border-orange-100">
+                                <span class="block text-orange-800 font-bold">Estado del Juego</span>
+                                <span id="game-status-text" class="text-stone-600">En espera...</span>
+                                <p class="text-xs text-stone-500 mt-1">Simula la condición "Fin de Juego"</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Explanation of Logic being Simulated -->
+                <div class="mt-8 p-4 bg-yellow-50 border border-yellow-200 rounded-lg text-sm text-yellow-800">
+                    <strong>¿Qué está ocurriendo?</strong>
+                    <ul class="list-disc list-inside mt-2 space-y-1">
+                        <li>Cuando pulsas el botón de acción, el sistema genera un número aleatorio para simular la "colisión" con el portero o el jugador.</li>
+                        <li>Las variables <code>Puntos</code> e <code>Intentos</code> se actualizan instantáneamente, imitando los bloques de Scratch.</li>
+                        <li>Si llegas a 5 intentos, el sistema activa la lógica de "Fin de Juego" descrita en la sección 5 del reporte.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-stone-100 border-t border-stone-200 py-8 mt-8">
+        <div class="container mx-auto px-4 text-center text-stone-500 text-sm">
+            <p>Generado basado en el reporte "Guía de Scratch: Fútbol y Pases".</p>
+            <p class="mt-2">Diseñado para aprendizaje interactivo.</p>
+        </div>
+    </footer>
+
+    <script>
+        // --- State Management ---
+        let state = {
+            points: 0,
+            attempts: 0,
+            mode: 0, // 0: Menu, 1: Penaltis, 2: Pases
+            maxAttempts: 5,
+            isGameOver: false
+        };
+
+        let myChart = null;
+
+        // --- Navigation Logic ---
+        function switchTab(tabId) {
+            // Hide all sections
+            document.querySelectorAll('.tab-content').forEach(el => {
+                el.classList.add('hidden');
+            });
+            // Show selected
+            document.getElementById(tabId).classList.remove('hidden');
+            
+            // Update buttons
+            document.querySelectorAll('.nav-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            document.getElementById('btn-' + tabId).classList.add('active');
+
+            // Resize chart if showing simulator
+            if(tabId === 'simulador' && myChart) {
+                setTimeout(() => myChart.resize(), 100);
+            }
+        }
+
+        // --- Simulator Logic ---
+
+        function initChart() {
+            const ctx = document.getElementById('gameStatsChart').getContext('2d');
+            myChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['Aciertos (Puntos)', 'Fallos'],
+                    datasets: [{
+                        label: 'Resultados de la Sesión',
+                        data: [0, 0],
+                        backgroundColor: [
+                            'rgba(16, 185, 129, 0.6)', // Green
+                            'rgba(239, 68, 68, 0.6)'   // Red
+                        ],
+                        borderColor: [
+                            'rgba(16, 185, 129, 1)',
+                            'rgba(239, 68, 68, 1)'
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            suggestedMax: 5,
+                            ticks: {
+                                stepSize: 1
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return context.parsed.y + ' eventos';
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function updateUI() {
+            document.getElementById('sim-score').innerText = state.points;
+            document.getElementById('sim-attempts').innerText = state.attempts;
+            
+            // Calculate Success Rate
+            let rate = 0;
+            if (state.attempts > 0) {
+                rate = Math.round((state.points / state.attempts) * 100);
+            }
+            document.getElementById('success-rate').innerText = rate + '%';
+
+            // Chart Update
+            if (myChart) {
+                myChart.data.datasets[0].data[0] = state.points;
+                myChart.data.datasets[0].data[1] = state.attempts - state.points;
+                myChart.update();
+            }
+        }
+
+        function startGame(mode) {
+            state.mode = mode;
+            state.points = 0;
+            state.attempts = 0;
+            state.isGameOver = false;
+            
+            document.getElementById('controls-menu').classList.add('hidden');
+            document.getElementById('controls-game').classList.remove('hidden');
+            
+            const modeName = mode === 1 ? "PENALTIS" : "PASES";
+            document.getElementById('message-log').innerText = `Modo ${modeName} iniciado`;
+            document.getElementById('game-status-text').innerText = "En juego";
+            
+            // Visual reset
+            document.getElementById('sim-ball').style.transform = "translate(0,0)";
+            
+            updateUI();
+        }
+
+        function resetGame() {
+            state.mode = 0;
+            document.getElementById('controls-menu').classList.remove('hidden');
+            document.getElementById('controls-game').classList.add('hidden');
+            document.getElementById('message-log').innerText = "Selecciona un juego";
+            document.getElementById('action-btn').disabled = false;
+            document.getElementById('action-btn').classList.remove('opacity-50', 'cursor-not-allowed');
+            document.getElementById('action-btn').innerText = "CHUTAR / PASAR";
+            
+            // We keep the chart data to show "Session" stats, or could reset. Let's keep for analysis feel.
+        }
+
+        function performAction() {
+            if (state.isGameOver) return;
+
+            // Logic simulation
+            state.attempts++;
+            
+            // Simulation Logic: 
+            // Penalties: Random chance (e.g., 60% goal probability)
+            // Passes: Random chance (e.g., 80% pass probability)
+            let success = false;
+            let chance = state.mode === 1 ? 0.6 : 0.8;
+            
+            if (Math.random() < chance) {
+                state.points++;
+                success = true;
+                document.getElementById('message-log').innerText = state.mode === 1 ? "¡GOL! ⚽" : "¡Pase Completado! 👟";
+                document.getElementById('message-log').className = "text-center font-bold text-shadow px-2 text-green-300 transition-all transform scale-110";
+            } else {
+                document.getElementById('message-log').innerText = state.mode === 1 ? "¡PARADA! 🧤" : "¡Pase fallido! ❌";
+                document.getElementById('message-log').className = "text-center font-bold text-shadow px-2 text-red-300 transition-all transform shake";
+            }
+
+            // Animate ball
+            const ball = document.getElementById('sim-ball');
+            ball.style.transform = success ? "translate(50px, -50px)" : "translate(-50px, -20px)";
+            setTimeout(() => {
+                ball.style.transform = "translate(0,0)";
+                document.getElementById('message-log').classList.remove('scale-110', 'shake');
+            }, 600);
+
+            // Game Over Check
+            if (state.attempts >= state.maxAttempts) {
+                endGame();
+            }
+
+            updateUI();
+        }
+
+        function endGame() {
+            state.isGameOver = true;
+            document.getElementById('message-log').innerText = `Fin del juego. Puntos: ${state.points}`;
+            document.getElementById('game-status-text').innerText = "Juego Terminado (Límite alcanzado)";
+            
+            const btn = document.getElementById('action-btn');
+            btn.disabled = true;
+            btn.innerText = "Fin de partida";
+            btn.classList.add('opacity-50', 'cursor-not-allowed');
+            
+            // Prompt equivalent from guide
+            setTimeout(() => {
+                if(confirm(`Has conseguido ${state.points} puntos. ¿Quieres seguir jugando?`)) {
+                    resetGame();
+                }
+            }, 500);
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            initChart();
+        });
+
+    </script>
+</body>
+</html>
