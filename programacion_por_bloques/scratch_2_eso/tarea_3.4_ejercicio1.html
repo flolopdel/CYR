@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Guía Interactiva Scratch: Ejercicio 1 - Juego de Contar</title>
+    <title>Guía Interactiva Scratch: Juego de Contar</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
     <style>
@@ -11,12 +11,13 @@
         
         body {
             font-family: 'Nunito', sans-serif;
-            background-color: #f8fafc; /* Slate 50 */
-            color: #334155; /* Slate 700 */
+            background-color: #f8fafc;
+            color: #334155;
+            scroll-behavior: smooth;
         }
         
         .scratch-block {
-            background-color: #4C97FF; /* Motion Blue default */
+            background-color: #4C97FF;
             color: white;
             padding: 8px 12px;
             border-radius: 8px;
@@ -42,543 +43,304 @@
             height: 300px;
         }
 
-        .step-card {
-            transition: all 0.3s ease;
-            border-left: 4px solid transparent;
-        }
-        
-        .step-card.active {
-            background-color: #fff;
-            border-left: 4px solid #4F46E5;
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        .game-canvas {
+            background-image: radial-gradient(#e2e8f0 1px, transparent 1px);
+            background-size: 20px 20px;
+            position: relative;
+            overflow: hidden;
+            border: 2px solid #cbd5e1;
+            border-radius: 1rem;
+            height: 300px;
         }
 
-        .concept-card:hover {
-            transform: translateY(-5px);
+        .sprite-element {
+            position: absolute;
+            font-size: 2rem;
+            user-select: none;
+            transition: opacity 0.5s ease;
+        }
+
+        .guia-paso {
+            border-left: 4px solid #e2e8f0;
+            padding-left: 1.5rem;
+            position: relative;
+            padding-bottom: 2rem;
+        }
+
+        .guia-paso::before {
+            content: '';
+            position: absolute;
+            left: -10px;
+            top: 0;
+            width: 16px;
+            height: 16px;
+            background-color: #4F46E5;
+            border-radius: 50%;
         }
     </style>
-    <!-- Chosen Palette: Warm Education (Slate background, White cards, Scratch-specific accent colors for code blocks to aid recognition) -->
+    <!-- Chosen Palette: Education Indigo (Indigo primary, White backgrounds, Scratch blocks colors) -->
     <!-- Application Structure Plan: 
-         1. Hero Section: Sets the context for 2nd ESO students.
-         2. Logic Flow (Interactive Timeline): Breaks down the pseudocode into clickable steps, allowing students to digest the algorithm before seeing code.
-         3. Math Lab (Interactive Data): A visualization of the 'Difficulty Algorithm' (Age vs. Objects) using Chart.js to explain the linear relationship y = x + 2. This turns abstract math into visual understanding.
-         4. Code Workshop (Tabs): Segments the implementation into manageable chunks (Setup, Stamp, Logic). Users can toggle views.
-         5. Concept Corner (Grid): Highlights key CS concepts (Abstraction, Instantiation) derived from the project.
-         6. Challenge Checklist: Gamifies the 'Next Steps' section.
-         Rationale: This structure moves from abstract logic -> concrete math -> implementation -> theoretical concepts, scaffolding the learning process.
+         1. Hero: Overview.
+         2. Live Demo: Engaging the user with the final product.
+         3. Step-by-Step Guide: Detailed pedagogical breakdown for 2nd ESO students (New primary focus).
+         4. Math Lab: Explaining the dynamic difficulty formula visually.
+         5. Concepts & Summary: Key takeaways.
     -->
-    <!-- Visualization & Content Choices:
-         1. Logic Timeline: HTML/Tailwind list. Goal: Break down complex logic. Interaction: Click to expand details.
-         2. Difficulty Chart (Chart.js): Line chart plotting Age vs. Objects. Goal: Visualize the formula 'Objects = Age + 2'. Interaction: Slider to update 'current age' on the chart.
-         3. Code Blocks: Styled HTML divs mimicking Scratch blocks. Goal: Familiarity.
-         4. Concept Cards: Grid layout. Goal: Terminology reinforcement.
-         5. Checklist: Simple JS state. Goal: Engagement/Self-assessment.
-         6. CONFIRMATION: NO SVG graphics used. NO Mermaid JS used.
-    -->
-    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
 </head>
 <body class="min-h-screen flex flex-col">
 
-    <!-- Navbar -->
     <nav class="bg-white shadow-sm sticky top-0 z-50">
         <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between h-16">
                 <div class="flex items-center">
-                    <span class="text-2xl font-bold text-indigo-600">CodeLab 2º ESO</span>
+                    <span class="text-2xl font-bold text-indigo-600">ScratchLab ESO</span>
                 </div>
                 <div class="flex items-center space-x-4">
-                    <a href="#logica" class="text-gray-600 hover:text-indigo-600 font-medium px-3 py-2 rounded-md">Lógica</a>
-                    <a href="#matematicas" class="text-gray-600 hover:text-indigo-600 font-medium px-3 py-2 rounded-md">Matemáticas</a>
-                    <a href="#codigo" class="text-gray-600 hover:text-indigo-600 font-medium px-3 py-2 rounded-md">Código</a>
+                    <a href="#demo" class="text-gray-600 hover:text-indigo-600 font-medium px-2">Demo</a>
+                    <a href="#pasos" class="text-gray-600 hover:text-indigo-600 font-medium px-2">Guía Paso a Paso</a>
+                    <a href="#matematicas" class="text-gray-600 hover:text-indigo-600 font-medium px-2">Lógica</a>
                 </div>
             </div>
         </div>
     </nav>
 
-    <!-- Hero Section -->
-    <header class="bg-gradient-to-r from-indigo-500 to-purple-600 text-white py-12">
+    <header class="bg-indigo-600 text-white py-12">
         <div class="max-w-4xl mx-auto px-4 text-center">
-            <h1 class="text-4xl md:text-5xl font-extrabold mb-4">Ejercicio 1: Juego de Contar y Memoria</h1>
-            <p class="text-xl text-indigo-100 mb-8">Una guía interactiva para dominar variables, bucles y la extensión de Lápiz en Scratch.</p>
-            <div class="flex justify-center gap-4">
-                <div class="bg-white/20 backdrop-blur-sm px-6 py-3 rounded-full border border-white/30">
-                    <span class="font-bold">Nivel:</span> 2º ESO
-                </div>
-                <div class="bg-white/20 backdrop-blur-sm px-6 py-3 rounded-full border border-white/30">
-                    <span class="font-bold">Tiempo:</span> ~45 min
-                </div>
-            </div>
+            <h1 class="text-4xl md:text-5xl font-extrabold mb-4">Guía de Resolución: Juego de Contar</h1>
+            <p class="text-xl text-indigo-100">Crea un sistema inteligente de conteo y memoria siguiendo estos pasos.</p>
         </div>
     </header>
 
-    <main class="flex-grow max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-16">
+    <main class="flex-grow max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-20">
 
-        <!-- SECTION 1: Logic Flow -->
-        <section id="logica" class="scroll-mt-20">
-            <div class="text-center mb-10">
-                <h2 class="text-3xl font-bold text-gray-800">1. Entendiendo el Algoritmo</h2>
-                <p class="mt-4 text-lg text-gray-600 max-w-3xl mx-auto">
-                    Antes de mover bloques, necesitamos entender qué queremos que haga el ordenador. 
-                    Haz clic en cada paso del diagrama de flujo para ver los detalles.
-                </p>
-            </div>
-
-            <div class="grid grid-cols-1 md:grid-cols-12 gap-8">
-                <!-- Interactive List -->
-                <div class="md:col-span-5 space-y-3" id="logic-steps-container">
-                    <!-- Steps injected by JS -->
-                </div>
-
-                <!-- Detail View -->
-                <div class="md:col-span-7 bg-white rounded-2xl shadow-lg p-8 border border-gray-100 flex flex-col justify-center min-h-[300px]">
-                    <h3 id="step-title" class="text-2xl font-bold text-indigo-600 mb-4">Selecciona un paso</h3>
-                    <p id="step-desc" class="text-gray-600 text-lg leading-relaxed">
-                        El pseudocódigo es una forma de escribir un programa en lenguaje natural antes de traducirlo a código real. Usa el menú de la izquierda para explorar el flujo de nuestro juego.
-                    </p>
-                    <div id="step-highlight" class="mt-6 p-4 bg-yellow-50 rounded-lg border-l-4 border-yellow-400 hidden">
-                        <span class="font-bold text-yellow-800">Concepto Clave:</span> <span id="step-concept" class="text-yellow-900"></span>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- SECTION 2: The Math Behind the Game -->
-        <section id="matematicas" class="bg-white rounded-3xl shadow-xl overflow-hidden scroll-mt-20">
-            <div class="grid grid-cols-1 lg:grid-cols-2">
-                <div class="p-8 lg:p-12 bg-indigo-50 flex flex-col justify-center">
-                    <h2 class="text-3xl font-bold text-gray-800 mb-4">2. Matemáticas del Diseño</h2>
-                    <p class="text-gray-600 mb-6">
-                        Para que el juego sea justo, adaptamos la dificultad a la edad del jugador. 
-                        Usamos una fórmula lineal simple:
-                    </p>
-                    <div class="bg-white p-4 rounded-lg shadow-sm text-center mb-8">
-                        <code class="text-2xl font-mono text-indigo-600 font-bold">Objetos = Edad + 2</code>
-                    </div>
-                    <p class="text-gray-600 mb-4">
-                        Prueba el simulador para ver cómo cambia la dificultad según la edad introducida.
-                    </p>
-                    
+        <!-- SECTION: Game Demo -->
+        <section id="demo" class="scroll-mt-20">
+            <div class="bg-white p-6 rounded-3xl shadow-xl border border-gray-200">
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
                     <div class="space-y-4">
-                        <label class="block text-sm font-medium text-gray-700">Simulador de Edad:</label>
-                        <input type="range" id="ageSlider" min="3" max="18" value="12" class="w-full h-2 bg-indigo-200 rounded-lg appearance-none cursor-pointer">
-                        <div class="flex justify-between text-sm text-gray-500 font-bold">
-                            <span>3 años</span>
-                            <span id="ageDisplay" class="text-indigo-600 text-lg">12 años</span>
-                            <span>18 años</span>
+                        <h2 class="text-2xl font-bold text-gray-800">🎮 Prueba el Resultado</h2>
+                        <div class="bg-indigo-50 p-4 rounded-xl border border-indigo-100 space-y-4">
+                            <div>
+                                <label class="block text-xs font-bold uppercase text-indigo-400 mb-1">Configuración</label>
+                                <input type="number" id="gameAge" value="12" placeholder="Edad" class="w-full p-2 rounded-lg border-none focus:ring-2 focus:ring-indigo-500 mb-2">
+                                <select id="gameLevel" class="w-full p-2 rounded-lg border-none focus:ring-2 focus:ring-indigo-500">
+                                    <option value="1">Modo Fácil</option>
+                                    <option value="2">Modo Memoria</option>
+                                </select>
+                            </div>
+                            <button id="startGameBtn" class="w-full bg-green-500 hover:bg-green-600 text-white font-bold py-3 rounded-xl transition-all">
+                                EJECUTAR PROGRAMA
+                            </button>
                         </div>
+                        <div id="gameStatus" class="p-4 rounded-xl text-center font-bold hidden"></div>
                     </div>
-                    <div class="mt-6 p-4 bg-blue-100 text-blue-800 rounded-lg text-center">
-                        Se generarían <span id="objectsDisplay" class="font-bold text-2xl">14</span> objetos.
-                    </div>
-                </div>
 
-                <div class="p-8 lg:p-12 flex items-center justify-center bg-white">
-                    <div class="chart-container">
-                        <canvas id="difficultyChart"></canvas>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- SECTION 3: Implementation Workshop -->
-        <section id="codigo" class="scroll-mt-20">
-            <div class="text-center mb-10">
-                <h2 class="text-3xl font-bold text-gray-800">3. Taller de Código</h2>
-                <p class="mt-4 text-lg text-gray-600 max-w-3xl mx-auto">
-                    Aquí traducimos nuestro pseudocódigo a bloques reales de Scratch.
-                    Explora cada fase del desarrollo.
-                </p>
-            </div>
-
-            <!-- Tabs -->
-            <div class="flex flex-wrap justify-center gap-2 mb-8" id="code-tabs">
-                <button class="tab-btn px-6 py-2 rounded-full font-bold text-sm transition-colors bg-indigo-600 text-white shadow-md" data-tab="setup">1. Preparación</button>
-                <button class="tab-btn px-6 py-2 rounded-full font-bold text-sm transition-colors bg-white text-gray-600 hover:bg-gray-100" data-tab="menu">2. Menú y Edad</button>
-                <button class="tab-btn px-6 py-2 rounded-full font-bold text-sm transition-colors bg-white text-gray-600 hover:bg-gray-100" data-tab="stamp">3. Bucle Sellar</button>
-                <button class="tab-btn px-6 py-2 rounded-full font-bold text-sm transition-colors bg-white text-gray-600 hover:bg-gray-100" data-tab="memory">4. Lógica Memoria</button>
-            </div>
-
-            <!-- Code Content Area -->
-            <div class="bg-white rounded-2xl shadow-lg border border-gray-200 overflow-hidden min-h-[400px]">
-                <div class="grid grid-cols-1 lg:grid-cols-2 h-full">
-                    <!-- Explanation Side -->
-                    <div class="p-8 bg-gray-50 border-r border-gray-100">
-                        <h3 id="code-title" class="text-2xl font-bold text-gray-800 mb-4">Configuración Inicial</h3>
-                        <p id="code-desc" class="text-gray-600 mb-6 leading-relaxed">
-                            Preparamos el escenario. Es crucial limpiar cualquier dibujo previo (del lápiz) y reiniciar las variables para que cada partida sea nueva.
-                        </p>
-                        <div class="bg-indigo-50 p-4 rounded-lg border border-indigo-100">
-                            <h4 class="font-bold text-indigo-700 mb-2">Variables Necesarias:</h4>
-                            <ul id="code-vars" class="list-disc list-inside text-sm text-gray-700 space-y-1">
-                                <li><code>Contador Real</code>: Guarda la respuesta correcta.</li>
-                                <li><code>Nivel</code>: 1 (Fácil) o 2 (Difícil).</li>
-                            </ul>
+                    <div class="lg:col-span-2 space-y-4">
+                        <div id="stageContainer" class="game-canvas bg-white shadow-inner">
+                            <div id="stagePlaceholder" class="absolute inset-0 flex items-center justify-center text-gray-400">
+                                <p>El escenario aparecerá aquí al ejecutar</p>
+                            </div>
                         </div>
-                    </div>
-
-                    <!-- Block Visualizer Side -->
-                    <div class="p-8 bg-slate-100 flex items-center justify-center overflow-y-auto">
-                        <div id="block-container" class="flex flex-col items-start scale-90 sm:scale-100 transition-transform origin-top-left">
-                            <!-- Blocks injected by JS -->
+                        <div id="answerBox" class="flex gap-2 hidden">
+                            <input type="number" id="userGuess" placeholder="¿Cuántos viste?" class="flex-grow p-3 border-2 border-indigo-200 rounded-xl">
+                            <button id="checkAnswerBtn" class="bg-indigo-600 text-white px-6 py-3 rounded-xl font-bold">Comprobar</button>
                         </div>
                     </div>
                 </div>
             </div>
         </section>
 
-        <!-- SECTION 4: Concepts & Challenges -->
-        <section class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
-            <!-- Concept Corner -->
-            <div>
-                <h2 class="text-2xl font-bold text-gray-800 mb-6 flex items-center">
-                    <span class="bg-yellow-400 text-yellow-900 w-8 h-8 rounded-full flex items-center justify-center mr-3 text-sm">★</span>
-                    Conceptos Clave
-                </h2>
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div class="concept-card bg-white p-6 rounded-xl shadow-sm border border-gray-100 cursor-pointer group">
-                        <h4 class="font-bold text-indigo-600 mb-2 group-hover:text-pink-500 transition-colors">Abstracción</h4>
-                        <p class="text-sm text-gray-500">Usamos una variable numérica para representar la cantidad de objetos en lugar de contarlos visualmente uno a uno.</p>
-                    </div>
-                    <div class="concept-card bg-white p-6 rounded-xl shadow-sm border border-gray-100 cursor-pointer group">
-                        <h4 class="font-bold text-indigo-600 mb-2 group-hover:text-pink-500 transition-colors">Instanciación</h4>
-                        <p class="text-sm text-gray-500">El bloque "Sellar" crea múltiples instancias visuales de un solo objeto sin duplicar el código.</p>
-                    </div>
-                    <div class="concept-card bg-white p-6 rounded-xl shadow-sm border border-gray-100 cursor-pointer group">
-                        <h4 class="font-bold text-indigo-600 mb-2 group-hover:text-pink-500 transition-colors">Condicionales</h4>
-                        <p class="text-sm text-gray-500">La estructura "Si... entonces" permite que el juego reaccione de forma diferente según la edad o el nivel elegido.</p>
-                    </div>
-                    <div class="concept-card bg-white p-6 rounded-xl shadow-sm border border-gray-100 cursor-pointer group">
-                        <h4 class="font-bold text-indigo-600 mb-2 group-hover:text-pink-500 transition-colors">Aleatoriedad</h4>
-                        <p class="text-sm text-gray-500">Usar posiciones al azar asegura que el juego sea rejugable y no predictible.</p>
-                    </div>
-                </div>
+        <!-- SECTION: Step by Step Guide -->
+        <section id="pasos" class="scroll-mt-20">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl font-bold text-gray-800">🛠️ Guía Paso a Paso para Alumnado</h2>
+                <p class="mt-2 text-gray-600">Sigue este orden para construir tu juego con éxito.</p>
             </div>
 
-            <!-- Challenge Checklist -->
-            <div class="bg-gradient-to-br from-indigo-600 to-purple-700 rounded-2xl p-8 text-white shadow-lg">
-                <h2 class="text-2xl font-bold mb-2">Tus Retos Finales</h2>
-                <p class="text-indigo-200 mb-6 text-sm">Marca las casillas cuando hayas completado las mejoras en tu proyecto de Scratch.</p>
+            <div class="max-w-4xl mx-auto space-y-4">
                 
-                <div class="space-y-4">
-                    <label class="flex items-start space-x-3 cursor-pointer group">
-                        <input type="checkbox" class="form-checkbox h-6 w-6 text-yellow-400 rounded focus:ring-yellow-400 border-transparent bg-white/20 group-hover:bg-white/30 transition">
-                        <span class="text-lg font-medium group-hover:text-yellow-200 transition">Variedad Visual: Cambiar disfraz al azar antes de sellar.</span>
-                    </label>
-                    <label class="flex items-start space-x-3 cursor-pointer group">
-                        <input type="checkbox" class="form-checkbox h-6 w-6 text-yellow-400 rounded focus:ring-yellow-400 border-transparent bg-white/20 group-hover:bg-white/30 transition">
-                        <span class="text-lg font-medium group-hover:text-yellow-200 transition">Límite Experto: Mensaje especial si Edad > 99.</span>
-                    </label>
-                    <label class="flex items-start space-x-3 cursor-pointer group">
-                        <input type="checkbox" class="form-checkbox h-6 w-6 text-yellow-400 rounded focus:ring-yellow-400 border-transparent bg-white/20 group-hover:bg-white/30 transition">
-                        <span class="text-lg font-medium group-hover:text-yellow-200 transition">Efectos: Cambiar color/brillo en cada sello.</span>
-                    </label>
-                    <label class="flex items-start space-x-3 cursor-pointer group">
-                        <input type="checkbox" class="form-checkbox h-6 w-6 text-yellow-400 rounded focus:ring-yellow-400 border-transparent bg-white/20 group-hover:bg-white/30 transition">
-                        <span class="text-lg font-medium group-hover:text-yellow-200 transition">Modo Turbo: Reducir el tiempo de espera en Nivel Difícil.</span>
-                    </label>
+                <!-- Paso 1 -->
+                <div class="guia-paso bg-white p-8 rounded-2xl shadow-sm hover:shadow-md transition-shadow">
+                    <h3 class="text-xl font-bold text-indigo-600 mb-3">1. Preparación y Variables</h3>
+                    <p class="text-gray-600 mb-4">Lo primero es añadir la extensión de <b>Lápiz</b> y crear las variables que guardarán la información del juego.</p>
+                    <div class="space-y-2 mb-4">
+                        <div class="scratch-block scratch-vars">variable [Contador Real]</div>
+                        <div class="scratch-block scratch-vars">variable [Objetos]</div>
+                    </div>
+                    <ul class="list-disc list-inside text-sm text-gray-500 space-y-1">
+                        <li>Usa el bloque <span class="scratch-block scratch-pen text-xs">borrar todo</span> al inicio para limpiar la pantalla.</li>
+                        <li>Esconde el objeto principal con <span class="scratch-block scratch-control text-xs">esconder</span>.</li>
+                    </ul>
+                </div>
+
+                <!-- Paso 2 -->
+                <div class="guia-paso bg-white p-8 rounded-2xl shadow-sm hover:shadow-md transition-shadow">
+                    <h3 class="text-xl font-bold text-indigo-600 mb-3">2. Captura de Datos y Dificultad</h3>
+                    <p class="text-gray-600 mb-4">Preguntamos la edad y calculamos cuántos objetos mostrar según la fórmula matemática.</p>
+                    <div class="bg-slate-50 p-4 rounded-lg border border-slate-200">
+                        <div class="scratch-block scratch-sensing">preguntar [¿Cuántos años tienes?] y esperar</div>
+                        <br>
+                        <div class="scratch-block scratch-vars">dar a [Objetos] el valor <span class="scratch-ops">( (respuesta) + (2) )</span></div>
+                    </div>
+                    <p class="mt-4 text-sm text-gray-500">Repite el proceso para preguntar el nivel (1 o 2) y guárdalo en una variable llamada <code class="bg-gray-100 px-1 rounded">Nivel</code>.</p>
+                </div>
+
+                <!-- Paso 3 -->
+                <div class="guia-paso bg-white p-8 rounded-2xl shadow-sm hover:shadow-md transition-shadow">
+                    <h3 class="text-xl font-bold text-indigo-600 mb-3">3. El Bucle de Sellado</h3>
+                    <p class="text-gray-600 mb-4">Este es el corazón del programa: usamos un bucle para colocar los objetos en posiciones al azar y "estamparlos".</p>
+                    <div class="bg-slate-50 p-4 rounded-lg border border-slate-200">
+                        <div class="scratch-block scratch-control">repetir (Objetos) veces</div>
+                        <div class="ml-8 border-l-2 border-slate-300 pl-4 py-1 space-y-1">
+                            <div class="scratch-block scratch-events">ir a x: (azar) y: (azar)</div><br>
+                            <div class="scratch-block scratch-pen">sellar</div><br>
+                            <div class="scratch-block scratch-vars">sumar a [Contador Real] (1)</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Paso 4 -->
+                <div class="guia-paso bg-white p-8 rounded-2xl shadow-sm hover:shadow-md transition-shadow">
+                    <h3 class="text-xl font-bold text-indigo-600 mb-3">4. Lógica de Memoria y Comprobación</h3>
+                    <p class="text-gray-600 mb-4">Si el nivel es difícil, borramos todo después de 3 segundos para que el usuario tenga que recordar.</p>
+                    <div class="bg-slate-50 p-4 rounded-lg border border-slate-200 mb-4">
+                        <div class="scratch-block scratch-control">si <span class="scratch-ops">&lt;(Nivel) = (2)&gt;</span> entonces</div>
+                        <div class="ml-8 border-l-2 border-slate-300 pl-4 py-1">
+                            <div class="scratch-block scratch-control">esperar (3) segundos</div><br>
+                            <div class="scratch-block scratch-pen">borrar todo</div>
+                        </div>
+                    </div>
+                    <p class="text-gray-600">Finalmente, usa un bloque <span class="scratch-block scratch-sensing text-xs">preguntar</span> para pedir la respuesta y compárala con tu variable <b>Contador Real</b>.</p>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- SECTION: Math Explanation -->
+        <section id="matematicas" class="scroll-mt-20">
+            <div class="bg-white rounded-3xl shadow-xl overflow-hidden">
+                <div class="grid grid-cols-1 lg:grid-cols-2">
+                    <div class="p-10 lg:p-14 bg-slate-900 text-white flex flex-col justify-center">
+                        <h2 class="text-3xl font-bold mb-6">Gráfica de Dificultad</h2>
+                        <p class="text-slate-400 mb-8">Como informáticos, diseñamos algoritmos escalables. Aquí vemos cómo la cantidad de objetos crece linealmente con la edad.</p>
+                        <div class="space-y-4">
+                            <div class="flex justify-between text-sm">
+                                <span>Edad: <span id="ageVal">12</span> años</span>
+                                <span class="text-indigo-400">Objetos: <span id="objVal">14</span></span>
+                            </div>
+                            <input type="range" id="ageSlider" min="3" max="18" value="12" class="w-full accent-indigo-500">
+                        </div>
+                    </div>
+                    <div class="p-8 bg-white flex items-center justify-center">
+                        <div class="chart-container">
+                            <canvas id="difficultyChart"></canvas>
+                        </div>
+                    </div>
                 </div>
             </div>
         </section>
 
     </main>
 
-    <footer class="bg-white border-t border-gray-200 py-8">
-        <div class="max-w-6xl mx-auto px-4 text-center text-gray-500">
-            <p>Guía Educativa - Proyecto Scratch 2º ESO</p>
+    <footer class="bg-slate-100 py-10 border-t border-slate-200">
+        <div class="max-w-6xl mx-auto px-4 text-center text-slate-500 text-sm">
+            <p>© 2026 Guía de Scratch para 2º ESO - Aprendizaje basado en Proyectos</p>
         </div>
     </footer>
 
     <script>
-        // --- Data & State ---
-        
-        // Logic Steps Data
-        const logicSteps = [
-            {
-                id: 1,
-                title: "Inicio y Limpieza",
-                desc: "Al pulsar la bandera verde, el escenario debe prepararse. Esto significa borrar cualquier dibujo anterior hecho con el lápiz y esconder el objeto principal para que no moleste.",
-                concept: "Inicialización",
-                icon: "🏁"
-            },
-            {
-                id: 2,
-                title: "Entrada de Datos (Edad)",
-                desc: "El programa pregunta la edad al usuario. Esta respuesta se guarda temporalmente y se usará para calcular la dificultad inmediatamente después.",
-                concept: "Input/Output",
-                icon: "⌨️"
-            },
-            {
-                id: 3,
-                title: "Cálculo de Dificultad",
-                desc: "Usamos una fórmula matemática. Si tienes 10 años, mostraremos 12 objetos. Si tienes 5, mostraremos 7. Esto adapta el reto al usuario.",
-                concept: "Variables y Operadores",
-                icon: "🧮"
-            },
-            {
-                id: 4,
-                title: "Selección de Nivel",
-                desc: "El usuario elige entre Fácil (objetos visibles) o Difícil (memoria). Guardamos esta elección en la variable 'Nivel'.",
-                concept: "Ramificación",
-                icon: "🔀"
-            },
-            {
-                id: 5,
-                title: "Bucle de Sellado",
-                desc: "Repetimos el proceso N veces: Mover a sitio al azar -> Sellar -> Sumar 1 al contador interno. Así generamos la nube de objetos.",
-                concept: "Bucles (Loops)",
-                icon: "🔄"
-            },
-            {
-                id: 6,
-                title: "Fase de Memoria",
-                desc: "Si el nivel es Difícil (2), esperamos unos segundos y ejecutamos 'Borrar Todo' para limpiar la pantalla, obligando al usuario a recordar.",
-                concept: "Condicional Simple",
-                icon: "🧠"
-            },
-            {
-                id: 7,
-                title: "Validación Final",
-                desc: "Preguntamos el recuento. Comparamos la Respuesta del usuario con nuestro 'Contador Real'. Si coinciden, ganan; si no, corregimos.",
-                concept: "Comparación Lógica",
-                icon: "✅"
+        // --- GAME SIMULATOR ---
+        const emojis = ['🍎', '🍌', '🍓', '🥑', '🍩', '🍕', '🐱', '🐶', '🚀', '⭐'];
+        let correctCount = 0;
+
+        const startBtn = document.getElementById('startGameBtn');
+        const stage = document.getElementById('stageContainer');
+        const placeholder = document.getElementById('stagePlaceholder');
+        const answerBox = document.getElementById('answerBox');
+        const statusBox = document.getElementById('gameStatus');
+
+        startBtn.addEventListener('click', () => {
+            const age = parseInt(document.getElementById('gameAge').value) || 10;
+            const level = document.getElementById('gameLevel').value;
+            correctCount = age + 2;
+
+            stage.innerHTML = '';
+            statusBox.classList.add('hidden');
+            answerBox.classList.add('hidden');
+            
+            // Simulation of "Stamp" loop
+            for (let i = 0; i < correctCount; i++) {
+                const sprite = document.createElement('div');
+                sprite.className = 'sprite-element';
+                sprite.textContent = emojis[Math.floor(Math.random() * emojis.length)];
+                sprite.style.left = Math.random() * 85 + '%';
+                sprite.style.top = Math.random() * 85 + '%';
+                stage.appendChild(sprite);
             }
-        ];
 
-        // Code Blocks Data (Simulated Scratch Blocks HTML)
-        const codeBlocks = {
-            setup: {
-                title: "Paso 1: Preparación",
-                desc: "Añadimos la extensión de Lápiz y preparamos el escenario inicial.",
-                vars: ["Contador Real", "Nivel"],
-                html: `
-                    <div class="scratch-block scratch-events">Al presionar 🏁</div>
-                    <div class="scratch-block scratch-pen">borrar todo</div>
-                    <div class="scratch-block scratch-control">esconder</div>
-                    <div class="scratch-block scratch-vars">dar a [Contador Real] el valor 0</div>
-                `
-            },
-            menu: {
-                title: "Paso 2: Menú y Edad",
-                desc: "Interactuamos con el usuario para configurar la partida.",
-                vars: ["respuesta", "objetos"],
-                html: `
-                    <div class="scratch-block scratch-sensing">preguntar "¿Cuántos años tienes?" y esperar</div>
-                    <div class="scratch-block scratch-vars">dar a [objetos] el valor <span class="scratch-ops">( respuesta + 2 )</span></div>
-                    <div class="scratch-block scratch-sensing">preguntar "Elige nivel: 1 (Fácil) o 2 (Difícil)" y esperar</div>
-                    <div class="scratch-block scratch-vars">dar a [Nivel] el valor ( respuesta )</div>
-                `
-            },
-            stamp: {
-                title: "Paso 3: Algoritmo de Sellar",
-                desc: "El núcleo del programa. Usamos un bucle para generar múltiples copias visuales.",
-                vars: ["objetos"],
-                html: `
-                    <div class="scratch-block scratch-control">repetir ( objetos )</div>
-                    <div class="pl-6 border-l-2 border-gray-300 flex flex-col items-start">
-                        <div class="scratch-block scratch-events">ir a [posición aleatoria]</div>
-                        <div class="scratch-block scratch-pen">sellar</div>
-                        <div class="scratch-block scratch-vars">sumar a [Contador Real] ( 1 )</div>
-                    </div>
-                `
-            },
-            memory: {
-                title: "Paso 4: Lógica de Memoria",
-                desc: "Aquí está la 'inteligencia' del juego que diferencia los niveles.",
-                vars: ["Nivel"],
-                html: `
-                    <div class="scratch-block scratch-control">si <span class="scratch-ops">&lt; Nivel = 2 &gt;</span> entonces</div>
-                    <div class="pl-6 border-l-2 border-gray-300 flex flex-col items-start">
-                        <div class="scratch-block scratch-control">esperar ( 3 ) segundos</div>
-                        <div class="scratch-block scratch-pen">borrar todo</div>
-                    </div>
-                    <div class="scratch-block scratch-sensing">preguntar "¿Cuántos objetos hay?" y esperar</div>
-                    <div class="scratch-block scratch-control">si <span class="scratch-ops">&lt; respuesta = Contador Real &gt;</span> entonces</div>
-                    <div class="pl-6 border-l-2 border-gray-300 flex flex-col items-start">
-                        <div class="scratch-block scratch-events">decir "¡Correcto!"</div>
-                    </div>
-                    <div class="scratch-block scratch-control">si no</div>
-                    <div class="pl-6 border-l-2 border-gray-300 flex flex-col items-start">
-                        <div class="scratch-block scratch-events">decir ( unir "Fallaste, eran " (Contador Real) )</div>
-                    </div>
-                `
+            if (level === "2") {
+                setTimeout(() => {
+                    const sprites = document.querySelectorAll('.sprite-element');
+                    sprites.forEach(s => s.style.opacity = '0');
+                    setTimeout(() => {
+                        stage.innerHTML = '<div class="absolute inset-0 flex items-center justify-center text-indigo-400 font-bold text-xl p-4 text-center">¡MEMORIZA! Los objetos han desaparecido.</div>';
+                        answerBox.classList.remove('hidden');
+                    }, 500);
+                }, 3000);
+            } else {
+                answerBox.classList.remove('hidden');
             }
-        };
-
-        // --- Initialization ---
-
-        document.addEventListener('DOMContentLoaded', () => {
-            initLogicFlow();
-            initChart();
-            initCodeTabs();
         });
 
-        // --- Logic Flow Component ---
-
-        function initLogicFlow() {
-            const container = document.getElementById('logic-steps-container');
-            const titleEl = document.getElementById('step-title');
-            const descEl = document.getElementById('step-desc');
-            const conceptEl = document.getElementById('step-concept');
-            const highlightEl = document.getElementById('step-highlight');
-
-            logicSteps.forEach((step, index) => {
-                const btn = document.createElement('div');
-                btn.className = `step-card p-4 rounded-lg cursor-pointer flex items-center gap-4 ${index === 0 ? 'bg-white border-l-4 border-indigo-600 shadow-md' : 'bg-white/50 hover:bg-white'}`;
-                btn.innerHTML = `
-                    <div class="flex-shrink-0 w-10 h-10 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center font-bold text-xl">${step.icon}</div>
-                    <div>
-                        <h4 class="font-bold text-gray-700">${step.title}</h4>
-                        <span class="text-xs text-gray-400 font-mono">Paso ${step.id}</span>
-                    </div>
-                `;
-
-                btn.addEventListener('click', () => {
-                    // Update UI State
-                    document.querySelectorAll('.step-card').forEach(c => {
-                        c.className = 'step-card p-4 rounded-lg cursor-pointer flex items-center gap-4 bg-white/50 hover:bg-white';
-                    });
-                    btn.className = 'step-card p-4 rounded-lg cursor-pointer flex items-center gap-4 bg-white border-l-4 border-indigo-600 shadow-md active';
-
-                    // Update Content
-                    titleEl.textContent = step.title;
-                    descEl.textContent = step.desc;
-                    conceptEl.textContent = step.concept;
-                    highlightEl.classList.remove('hidden');
-                });
-
-                container.appendChild(btn);
-            });
-        }
-
-        // --- Chart Component ---
-
-        function initChart() {
-            const ctx = document.getElementById('difficultyChart').getContext('2d');
-            const slider = document.getElementById('ageSlider');
-            const ageDisplay = document.getElementById('ageDisplay');
-            const objectsDisplay = document.getElementById('objectsDisplay');
-
-            // Generate Data points for age 3 to 18
-            const labels = Array.from({length: 16}, (_, i) => i + 3);
-            const dataPoints = labels.map(age => age + 2);
-
-            const chart = new Chart(ctx, {
-                type: 'line',
-                data: {
-                    labels: labels,
-                    datasets: [{
-                        label: 'Número de Objetos (Dificultad)',
-                        data: dataPoints,
-                        borderColor: '#4F46E5',
-                        backgroundColor: 'rgba(79, 70, 229, 0.1)',
-                        borderWidth: 3,
-                        pointBackgroundColor: '#fff',
-                        pointBorderColor: '#4F46E5',
-                        pointRadius: 5,
-                        pointHoverRadius: 8,
-                        fill: true,
-                        tension: 0.1
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        tooltip: {
-                            callbacks: {
-                                label: function(context) {
-                                    return `Edad ${context.label}: ${context.raw} objetos`;
-                                }
-                            }
-                        },
-                        legend: { position: 'bottom' }
-                    },
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            title: { display: true, text: 'Cantidad de Objetos' }
-                        },
-                        x: {
-                            title: { display: true, text: 'Edad del Jugador' }
-                        }
-                    }
-                }
-            });
-
-            // Slider Interaction
-            slider.addEventListener('input', (e) => {
-                const age = parseInt(e.target.value);
-                const objects = age + 2;
-                
-                ageDisplay.textContent = `${age} años`;
-                objectsDisplay.textContent = objects;
-
-                // Highlight point on chart
-                const index = labels.indexOf(age);
-                const colors = labels.map((_, i) => i === index ? '#FFAB19' : '#fff'); // Scratch Orange highlight
-                const borderColors = labels.map((_, i) => i === index ? '#FF8C1A' : '#4F46E5');
-                const radii = labels.map((_, i) => i === index ? 10 : 5);
-
-                chart.data.datasets[0].pointBackgroundColor = colors;
-                chart.data.datasets[0].pointBorderColor = borderColors;
-                chart.data.datasets[0].pointRadius = radii;
-                chart.update();
-            });
-        }
-
-        // --- Code Workshop Component ---
-
-        function initCodeTabs() {
-            const tabs = document.querySelectorAll('.tab-btn');
-            const titleEl = document.getElementById('code-title');
-            const descEl = document.getElementById('code-desc');
-            const varsContainer = document.getElementById('code-vars');
-            const blockContainer = document.getElementById('block-container');
-
-            // Default load
-            loadCodeTab('setup');
-
-            tabs.forEach(tab => {
-                tab.addEventListener('click', () => {
-                    // Update Tab Styles
-                    tabs.forEach(t => {
-                        t.classList.remove('bg-indigo-600', 'text-white', 'shadow-md');
-                        t.classList.add('bg-white', 'text-gray-600', 'hover:bg-gray-100');
-                    });
-                    tab.classList.remove('bg-white', 'text-gray-600', 'hover:bg-gray-100');
-                    tab.classList.add('bg-indigo-600', 'text-white', 'shadow-md');
-
-                    // Load Content
-                    loadCodeTab(tab.dataset.tab);
-                });
-            });
-
-            function loadCodeTab(key) {
-                const data = codeBlocks[key];
-                
-                // Animation reset
-                blockContainer.style.opacity = '0';
-                blockContainer.style.transform = 'translateY(10px) scale(0.95)';
-                
-                setTimeout(() => {
-                    titleEl.textContent = data.title;
-                    descEl.textContent = data.desc;
-                    blockContainer.innerHTML = data.html;
-                    
-                    // Update vars list
-                    varsContainer.innerHTML = data.vars.map(v => `<li><code>${v}</code></li>`).join('');
-
-                    // Animation in
-                    blockContainer.style.transition = 'all 0.3s ease';
-                    blockContainer.style.opacity = '1';
-                    blockContainer.style.transform = 'translateY(0) scale(1)'; // Reset scale
-                    
-                    // Specific fix for smaller screens handled by CSS media queries mostly, 
-                    // but we ensure clean state here.
-                }, 150);
+        document.getElementById('checkAnswerBtn').addEventListener('click', () => {
+            const guess = parseInt(document.getElementById('userGuess').value);
+            statusBox.classList.remove('hidden');
+            if (guess === correctCount) {
+                statusBox.textContent = "¡EXCELENTE! Conteo correcto.";
+                statusBox.className = "p-4 rounded-xl text-center font-bold text-lg bg-green-100 text-green-700";
+            } else {
+                statusBox.textContent = `¡OOPS! Había ${correctCount} objetos.`;
+                statusBox.className = "p-4 rounded-xl text-center font-bold text-lg bg-red-100 text-red-700";
             }
-        }
+        });
 
+        // --- CHART ---
+        const ctx = document.getElementById('difficultyChart').getContext('2d');
+        const chart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: [3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18],
+                datasets: [{
+                    label: 'Número de Objetos',
+                    data: [5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20],
+                    borderColor: '#6366f1',
+                    backgroundColor: 'rgba(99, 102, 241, 0.1)',
+                    fill: true,
+                    tension: 0.1,
+                    pointRadius: 4,
+                    pointBackgroundColor: '#6366f1'
+                }]
+            },
+            options: {
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: { 
+                    y: { beginAtZero: true, grid: { color: '#f1f5f9' } },
+                    x: { grid: { display: false } }
+                }
+            }
+        });
+
+        document.getElementById('ageSlider').addEventListener('input', (e) => {
+            const val = parseInt(e.target.value);
+            document.getElementById('ageVal').textContent = val;
+            document.getElementById('objVal').textContent = val + 2;
+            
+            // Update visual indicator on chart
+            chart.data.datasets[0].pointBackgroundColor = chart.data.labels.map(l => l == val ? '#ef4444' : '#6366f1');
+            chart.data.datasets[0].pointRadius = chart.data.labels.map(l => l == val ? 8 : 4);
+            chart.update();
+        });
     </script>
 </body>
 </html>
