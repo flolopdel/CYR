@@ -66,11 +66,18 @@
     <!-- Navigation -->
     <nav class="sticky top-0 z-50 bg-white/90 backdrop-blur-sm border-b border-stone-200 shadow-sm">
         <div class="container mx-auto px-4">
-            <div class="flex overflow-x-auto justify-center space-x-2 py-4">
-                <button onclick="switchTab('planificacion')" id="btn-planificacion" class="nav-btn active px-6 py-2 rounded-full border border-stone-300 font-semibold transition hover:bg-emerald-50 whitespace-nowrap">1. Planificación</button>
-                <button onclick="switchTab('penaltis')" id="btn-penaltis" class="nav-btn px-6 py-2 rounded-full border border-stone-300 font-semibold transition hover:bg-emerald-50 whitespace-nowrap">2. Lógica Penaltis</button>
-                <button onclick="switchTab('pases')" id="btn-pases" class="nav-btn px-6 py-2 rounded-full border border-stone-300 font-semibold transition hover:bg-emerald-50 whitespace-nowrap">3. Lógica Pases</button>
-                <button onclick="switchTab('simulador')" id="btn-simulador" class="nav-btn px-6 py-2 rounded-full border border-stone-300 font-semibold transition hover:bg-emerald-50 whitespace-nowrap">4. Simulador en Vivo</button>
+            <div class="flex items-center justify-between py-4">
+                <div class="flex overflow-x-auto justify-center space-x-2">
+                    <button onclick="switchTab('planificacion')" id="btn-planificacion" class="nav-btn active px-6 py-2 rounded-full border border-stone-300 font-semibold transition hover:bg-emerald-50 whitespace-nowrap">1. Planificación</button>
+                    <button onclick="switchTab('penaltis')" id="btn-penaltis" class="nav-btn px-6 py-2 rounded-full border border-stone-300 font-semibold transition hover:bg-emerald-50 whitespace-nowrap">2. Lógica Penaltis</button>
+                    <button onclick="switchTab('pases')" id="btn-pases" class="nav-btn px-6 py-2 rounded-full border border-stone-300 font-semibold transition hover:bg-emerald-50 whitespace-nowrap">3. Lógica Pases</button>
+                    <button onclick="switchTab('simulador')" id="btn-simulador" class="nav-btn px-6 py-2 rounded-full border border-stone-300 font-semibold transition hover:bg-emerald-50 whitespace-nowrap">4. Simulador en Vivo</button>
+                </div>
+                <div class="hidden md:flex items-center space-x-3 ml-4">
+                    <a href="../../index.html" class="text-sm text-stone-600 hover:text-emerald-600">Inicio</a>
+                    <a href="../diagramas_pseudocodigo.html" class="text-sm text-stone-600 hover:text-emerald-600">Diagramas</a>
+                    <a href="../scratch_2_eso/tarea_3.4_ejercicio1.html" class="text-sm text-stone-600 hover:text-emerald-600">Contar</a>
+                </div>
             </div>
         </div>
     </nav>
