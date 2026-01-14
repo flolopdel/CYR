@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Juego del Número Secreto con Scratch</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            margin: 20px;
+            background-color: #f4f4f4;
+            color: #333;
+        }
+        .container {
+            max-width: 900px;
+            margin: auto;
+            background: #fff;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        h1, h2, h3 {
+            color: #0056b3;
+        }
+        .code-block {
+            background-color: #e9e9e9;
+            padding: 15px;
+            border-left: 5px solid #007bff;
+            margin: 20px 0;
+            overflow-x: auto;
+        }
+        .scratch-block {
+            display: inline-block;
+            background-color: #ffab19; /* Naranja para "eventos" o genérico */
+            color: white;
+            padding: 5px 10px;
+            margin: 5px;
+            border-radius: 5px;
+            font-family: monospace;
+            font-size: 0.9em;
+            box-shadow: 1px 1px 2px rgba(0,0,0,0.2);
+        }
+        .scratch-block.variables { background-color: #ff8c1a; } /* Naranja oscuro */
+        .scratch-block.control { background-color: #ffab19; } /* Naranja */
+        .scratch-block.sensores { background-color: #4CBFE6; } /* Azul claro */
+        .scratch-block.operadores { background-color: #59C059; } /* Verde */
+        .scratch-block.apariencia { background-color: #9966FF; } /* Morado */
+        img {
+            max-width: 100%;
+            height: auto;
+            display: block;
+            margin: 20px 0;
+            border-radius: 5px;
+        }
+        ul {
+            list-style-type: disc;
+            margin-left: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎮 ¡A programar un Juego en Scratch!</h1>
+        <p>¡Hola, jóvenes programadores! Hoy vamos a crear un juego muy divertido en Scratch: **"El Número Secreto"**. El ordenador pensará un número del 1 al 15 y tu misión será adivinarlo. ¡Te daremos pistas para que sea más emocionante!</p>
+
+        <h2>🕵️‍♀️ ¿Cómo funciona el juego?</h2>
+        <p>La idea es sencilla:</p>
+        <ul>
+            <li>El ordenador elige un número **secreto** (¡solo él lo sabe!).</li>
+            <li>Tú intentas adivinarlo escribiendo un número.</li>
+            <li>Si no aciertas, el ordenador te dirá si su número es **mayor** o **menor** que el tuyo.</li>
+            <li>¡Seguirás intentándolo hasta que lo adivines!</li>
+            <li>Al final, podrás decidir si quieres jugar otra partida.</li>
+        </ul>
+
+        <h2>⚙️ La Lógica del Programa (Pseudocódigo)</h2>
+        <p>Antes de ir a Scratch, siempre es bueno pensar los pasos. Esto es lo que nuestra computadora hará:</p>
+        <div class="code-block">
+            <pre>
+**INICIO DEL JUEGO**
+
+1.  **PREGUNTAR**: "¿Quieres jugar al número secreto? (sí/no)"
+2.  **REPETIR** (todo el juego) **HASTA QUE** la respuesta sea "no":
+    a.  **DECIR**: "Voy a pensar un número entre 1 y 15..."
+    b.  **GUARDAR** en la variable `numero_secreto` un número **AL AZAR** entre 1 y 15.
+    c.  **INICIAR** la variable `acertado` como "falso".
+
+    d.  **REPETIR** (los intentos) **HASTA QUE** `acertado` sea "verdadero":
+        i.  **PREGUNTAR**: "¿Qué número crees que he pensado?"
+        ii. **SI** tu respuesta es igual a `numero_secreto`:
+            * **DECIR**: "¡¡¡Exacto!!! ¡Lo has adivinado!"
+            * **PONER** `acertado` a "verdadero".
+        iii. **SI NO** (si aún no has acertado):
+            * **SI** tu respuesta es MENOR que `numero_secreto`:
+                * **DECIR**: "Mi número es más **GRANDE**."
+            * **SI NO** (si tu respuesta es MAYOR que `numero_secreto`):
+                * **DECIR**: "Mi número es más **PEQUEÑO**."
+
+    e.  **PREGUNTAR**: "¿Quieres jugar otra vez? (sí/no)"
+
+3.  **FIN DEL REPETIR**
+4.  **DECIR**: "¡Hasta la próxima! ¡Gracias por jugar!"
+
+**FIN DEL JUEGO**
+            </pre>
+        </div>
+
+        <h2>🧱 Bloques de Scratch que vamos a usar</h2>
+        <p>En Scratch, cada paso de la lógica se convierte en un bloque de color. ¡Aquí tienes algunos que te serán muy útiles!</p>
+
+        <h3>🟡 Bloques de Control (Naranja)</h3>
+        <p>Estos bloques nos ayudan a que el programa repita cosas o tome decisiones.</p>
+        <ul>
+            <li><span class="scratch-block control">cuando ⚑ se haga clic</span>: Para iniciar el juego.</li>
+            <li><span class="scratch-block control">repetir hasta que &lt;&gt;</span>: Para que el juego se repita hasta que aciertes o hasta que el jugador no quiera jugar más.</li>
+            <li><span class="scratch-block control">si &lt;&gt; entonces</span>: Para comprobar si la respuesta es correcta.</li>
+            <li><span class="scratch-block control">si &lt;&gt; entonces / si no</span>: Para dar las pistas de "mayor" o "menor".</li>
+        </ul>
+        <img src="https://images.prismic.io/scratch/37ae5d66-88cf-4a7b-a45b-3b32e013fb2d_control_blocks.png?auto=compress,format" alt="Bloques de Control en Scratch">
+
+        <h3>🔵 Bloques de Sensores (Azul claro)</h3>
+        <p>¡Estos bloques nos permiten interactuar con el jugador!</p>
+        <ul>
+            <li><span class="scratch-block sensores">preguntar [¿Cómo te llamas?] y esperar</span>: Para pedir al jugador que escriba un número.</li>
+            <li><span class="scratch-block sensores">respuesta</span>: Aquí se guarda lo que el jugador escribe. ¡Es muy importante!</li>
+        </ul>
+        <img src="https://images.prismic.io/scratch/f0611756-11f2-4952-bf1c-d76cf5098ffb_sensing_blocks.png?auto=compress,format" alt="Bloques de Sensores en Scratch">
+
+        <h3>🟢 Bloques de Operadores (Verde)</h3>
+        <p>Estos bloques nos ayudan a hacer comparaciones y a elegir números al azar.</p>
+        <ul>
+            <li><span class="scratch-block operadores">número al azar entre [1] y [15]</span>: ¡Fundamental para que el ordenador elija su número secreto!</li>
+            <li><span class="scratch-block operadores">&lt; &gt; = &lt; &gt;</span>: Para saber si tu respuesta es igual al número secreto.</li>
+            <li><span class="scratch-block operadores">&lt; &gt; &lt; &lt; &gt;</span>: Para saber si tu respuesta es menor que el número secreto.</li>
+            <li><span class="scratch-block operadores">&lt; &gt; &gt; &lt; &gt;</span>: Para saber si tu respuesta es mayor que el número secreto.</li>
+        </ul>
+        <img src="https://images.prismic.io/scratch/f08e50b1-382a-4303-936e-d7f022ef256e_operators_blocks.png?auto=compress,format" alt="Bloques de Operadores en Scratch">
+
+        <h3>🟠 Bloques de Variables (Naranja oscuro)</h3>
+        <p>¡Las variables son como cajas donde guardamos información! Necesitarás crear:</p>
+        <ul>
+            <li><span class="scratch-block variables">numero_secreto</span>: Para que el ordenador guarde el número que ha pensado.</li>
+            <li><span class="scratch-block variables">acertado</span>: Una variable que cambia de "falso" a "verdadero" cuando adivinas el número.</li>
+            <li><span class="scratch-block variables">dar a [mi variable] el valor [0]</span>: Para inicializar tus variables.</li>
+        </ul>
+        <img src="https://images.prismic.io/scratch/77119565-d053-48e0-a42e-cf61b4028328_variables_blocks.png?auto=compress,format" alt="Bloques de Variables en Scratch">
+
+        <h3>🟣 Bloques de Apariencia (Morado)</h3>
+        <p>Para que nuestro personaje hable y dé las pistas.</p>
+        <ul>
+            <li><span class="scratch-block apariencia">decir [Hola!] durante [2] segundos</span>: Para que tu personaje hable en el juego.</li>
+        </ul>
+        <img src="https://images.prismic.io/scratch/532dd63f-67ed-4315-99d9-e316a7f8021d_looks_blocks.png?auto=compress,format" alt="Bloques de Apariencia en Scratch">
+
+        <p>¡Con estos bloques y la lógica explicada, tienes todo lo necesario para crear tu propio "Juego del Número Secreto" en Scratch! ¡Manos a la obra y a divertirse programando!</p>
+    </div>
+</body>
+</html>
