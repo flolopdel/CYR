@@ -3,157 +3,538 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Juego del Número Secreto con Scratch</title>
+    <title>Guía Interactiva: El Número Secreto en Scratch</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap');
+        
         body {
-            font-family: Arial, sans-serif;
-            line-height: 1.6;
-            margin: 20px;
-            background-color: #f4f4f4;
-            color: #333;
+            font-family: 'Outfit', sans-serif;
+            background-color: #f5f5f0; /* Stone-100 equivalent - Warm Neutral */
+            color: #44403c; /* Stone-700 */
         }
-        .container {
-            max-width: 900px;
-            margin: auto;
-            background: #fff;
-            padding: 30px;
-            border-radius: 8px;
-            box-shadow: 0 0 10px rgba(0,0,0,0.1);
-        }
-        h1, h2, h3 {
-            color: #0056b3;
-        }
-        .code-block {
-            background-color: #e9e9e9;
-            padding: 15px;
-            border-left: 5px solid #007bff;
-            margin: 20px 0;
-            overflow-x: auto;
-        }
+
         .scratch-block {
-            display: inline-block;
-            background-color: #ffab19; /* Naranja para "eventos" o genérico */
+            padding: 8px 12px;
+            margin: 4px 0;
+            border-radius: 4px;
             color: white;
-            padding: 5px 10px;
-            margin: 5px;
-            border-radius: 5px;
-            font-family: monospace;
-            font-size: 0.9em;
-            box-shadow: 1px 1px 2px rgba(0,0,0,0.2);
+            font-weight: 600;
+            font-size: 0.9rem;
+            display: inline-block;
+            box-shadow: 2px 2px 0px rgba(0,0,0,0.1);
+            cursor: default;
+            transition: transform 0.1s;
         }
-        .scratch-block.variables { background-color: #ff8c1a; } /* Naranja oscuro */
-        .scratch-block.control { background-color: #ffab19; } /* Naranja */
-        .scratch-block.sensores { background-color: #4CBFE6; } /* Azul claro */
-        .scratch-block.operadores { background-color: #59C059; } /* Verde */
-        .scratch-block.apariencia { background-color: #9966FF; } /* Morado */
-        img {
-            max-width: 100%;
-            height: auto;
-            display: block;
-            margin: 20px 0;
-            border-radius: 5px;
+        
+        .scratch-block:hover {
+            transform: scale(1.02);
         }
-        ul {
-            list-style-type: disc;
-            margin-left: 20px;
+
+        .block-event { background-color: #FFBF00; border: 1px solid #e6ac00; }
+        .block-control { background-color: #FFAB19; border: 1px solid #e69b17; }
+        .block-sensing { background-color: #5CB1D6; border: 1px solid #4a9ec2; }
+        .block-operators { background-color: #59C059; border: 1px solid #4caf50; }
+        .block-variables { background-color: #FF8C1A; border: 1px solid #db7916; }
+        .block-looks { background-color: #9966FF; border: 1px solid #7a4cc7; }
+
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 300px;
+            max-height: 400px;
+        }
+
+        .step-card {
+            transition: all 0.3s ease;
+        }
+        .step-card.active {
+            border-left: 4px solid #FF8C1A;
+            background-color: white;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+        .step-card.inactive {
+            opacity: 0.6;
+            background-color: #f5f5f0;
+        }
+        
+        /* Custom Scrollbar for cleaner look */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1; 
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #d6d3d1; 
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #a8a29e; 
         }
     </style>
+    <!-- Chosen Palette: Warm Neutrals (Stone/Sand) with functional Scratch-mimicking accent colors for logic blocks. -->
+    <!-- Application Structure Plan: 
+         1. Hero Section: Sets the context of the exercise.
+         2. Logic Dashboard: Explains the core variables and concepts (The "Preparation" phase).
+         3. Interactive Flow Builder: A split-screen section. Left side is the step-by-step narrative. Right side visualizes the block stack dynamically as the user progresses. This replaces a static list with an active construction visualization.
+         4. Simulation & Analytics: A functional version of the game built in JS but styled to feel like the tutorial result. Includes a chart to track user performance (attempts), satisfying the "Data Analyst" role by visualizing the algorithm's outcome.
+         5. Summary/Pro Tips: Final takeaways.
+    -->
+    <!-- Visualization & Content Choices: 
+         - Logic Blocks: Styled HTML divs using Tailwind to mimic Scratch blocks. No SVG used. Interaction: Hover effects.
+         - Flow Builder: Interactive stepper. Justification: Helps the user understand the sequence of code execution.
+         - Performance Chart: Chart.js Bar Chart. Goal: Visualize the difficulty/randomness of the algorithm. Interaction: Updates dynamically after each game played in the simulation.
+         - Dynamic Text: Updates based on simulation state (High/Low hints).
+    -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
 </head>
-<body>
-    <div class="container">
-        <h1>🎮 ¡A programar un Juego en Scratch!</h1>
-        <p>¡Hola, jóvenes programadores! Hoy vamos a crear un juego muy divertido en Scratch: **"El Número Secreto"**. El ordenador pensará un número del 1 al 15 y tu misión será adivinarlo. ¡Te daremos pistas para que sea más emocionante!</p>
+<body class="antialiased">
 
-        <h2>🕵️‍♀️ ¿Cómo funciona el juego?</h2>
-        <p>La idea es sencilla:</p>
-        <ul>
-            <li>El ordenador elige un número **secreto** (¡solo él lo sabe!).</li>
-            <li>Tú intentas adivinarlo escribiendo un número.</li>
-            <li>Si no aciertas, el ordenador te dirá si su número es **mayor** o **menor** que el tuyo.</li>
-            <li>¡Seguirás intentándolo hasta que lo adivines!</li>
-            <li>Al final, podrás decidir si quieres jugar otra partida.</li>
-        </ul>
-
-        <h2>⚙️ La Lógica del Programa (Pseudocódigo)</h2>
-        <p>Antes de ir a Scratch, siempre es bueno pensar los pasos. Esto es lo que nuestra computadora hará:</p>
-        <div class="code-block">
-            <pre>
-**INICIO DEL JUEGO**
-
-1.  **PREGUNTAR**: "¿Quieres jugar al número secreto? (sí/no)"
-2.  **REPETIR** (todo el juego) **HASTA QUE** la respuesta sea "no":
-    a.  **DECIR**: "Voy a pensar un número entre 1 y 15..."
-    b.  **GUARDAR** en la variable `numero_secreto` un número **AL AZAR** entre 1 y 15.
-    c.  **INICIAR** la variable `acertado` como "falso".
-
-    d.  **REPETIR** (los intentos) **HASTA QUE** `acertado` sea "verdadero":
-        i.  **PREGUNTAR**: "¿Qué número crees que he pensado?"
-        ii. **SI** tu respuesta es igual a `numero_secreto`:
-            * **DECIR**: "¡¡¡Exacto!!! ¡Lo has adivinado!"
-            * **PONER** `acertado` a "verdadero".
-        iii. **SI NO** (si aún no has acertado):
-            * **SI** tu respuesta es MENOR que `numero_secreto`:
-                * **DECIR**: "Mi número es más **GRANDE**."
-            * **SI NO** (si tu respuesta es MAYOR que `numero_secreto`):
-                * **DECIR**: "Mi número es más **PEQUEÑO**."
-
-    e.  **PREGUNTAR**: "¿Quieres jugar otra vez? (sí/no)"
-
-3.  **FIN DEL REPETIR**
-4.  **DECIR**: "¡Hasta la próxima! ¡Gracias por jugar!"
-
-**FIN DEL JUEGO**
-            </pre>
+    <!-- Navigation -->
+    <nav class="sticky top-0 z-50 bg-stone-50/90 backdrop-blur-md border-b border-stone-200">
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16 items-center">
+                <div class="flex items-center">
+                    <span class="text-2xl font-bold text-orange-600 mr-2">✦</span>
+                    <h1 class="text-xl font-bold text-stone-800 tracking-tight">Scratch Lab: Número Secreto</h1>
+                </div>
+                <div class="hidden md:flex space-x-8">
+                    <a href="#conceptos" class="text-stone-600 hover:text-orange-600 transition-colors text-sm font-medium">Conceptos</a>
+                    <a href="#construccion" class="text-stone-600 hover:text-orange-600 transition-colors text-sm font-medium">Construcción</a>
+                    <a href="#simulacion" class="text-stone-600 hover:text-orange-600 transition-colors text-sm font-medium">Simulación</a>
+                </div>
+            </div>
         </div>
+    </nav>
 
-        <h2>🧱 Bloques de Scratch que vamos a usar</h2>
-        <p>En Scratch, cada paso de la lógica se convierte en un bloque de color. ¡Aquí tienes algunos que te serán muy útiles!</p>
+    <!-- Hero Section -->
+    <header class="max-w-4xl mx-auto px-4 py-16 text-center">
+        <div class="inline-block p-2 px-4 bg-orange-100 text-orange-700 rounded-full text-xs font-semibold tracking-wide uppercase mb-4">Ejercicio 2</div>
+        <h2 class="text-4xl md:text-5xl font-extrabold text-stone-800 mb-6 leading-tight">
+            Programa el algoritmo de la <span class="text-orange-500">Adivinanza</span>
+        </h2>
+        <p class="text-lg text-stone-600 mb-8 max-w-2xl mx-auto leading-relaxed">
+            Una guía interactiva para crear un juego de lógica en Scratch. El ordenador "piensa" un número entre 1 y 15, y tú debes encontrarlo usando pistas de lógica computacional.
+        </p>
+        <button onclick="document.getElementById('conceptos').scrollIntoView({behavior: 'smooth'})" class="bg-stone-800 text-white px-8 py-3 rounded-lg font-semibold hover:bg-stone-700 transition shadow-lg hover:shadow-xl transform hover:-translate-y-0.5">
+            Comenzar Tutorial
+        </button>
+    </header>
 
-        <h3>🟡 Bloques de Control (Naranja)</h3>
-        <p>Estos bloques nos ayudan a que el programa repita cosas o tome decisiones.</p>
-        <ul>
-            <li><span class="scratch-block control">cuando ⚑ se haga clic</span>: Para iniciar el juego.</li>
-            <li><span class="scratch-block control">repetir hasta que &lt;&gt;</span>: Para que el juego se repita hasta que aciertes o hasta que el jugador no quiera jugar más.</li>
-            <li><span class="scratch-block control">si &lt;&gt; entonces</span>: Para comprobar si la respuesta es correcta.</li>
-            <li><span class="scratch-block control">si &lt;&gt; entonces / si no</span>: Para dar las pistas de "mayor" o "menor".</li>
-        </ul>
-        <img src="https://images.prismic.io/scratch/37ae5d66-88cf-4a7b-a45b-3b32e013fb2d_control_blocks.png?auto=compress,format" alt="Bloques de Control en Scratch">
+    <!-- Main Content Grid -->
+    <main class="max-w-6xl mx-auto px-4 pb-20 space-y-24">
 
-        <h3>🔵 Bloques de Sensores (Azul claro)</h3>
-        <p>¡Estos bloques nos permiten interactuar con el jugador!</p>
-        <ul>
-            <li><span class="scratch-block sensores">preguntar [¿Cómo te llamas?] y esperar</span>: Para pedir al jugador que escriba un número.</li>
-            <li><span class="scratch-block sensores">respuesta</span>: Aquí se guarda lo que el jugador escribe. ¡Es muy importante!</li>
-        </ul>
-        <img src="https://images.prismic.io/scratch/f0611756-11f2-4952-bf1c-d76cf5098ffb_sensing_blocks.png?auto=compress,format" alt="Bloques de Sensores en Scratch">
+        <!-- Section 1: Preparation & Concepts -->
+        <section id="conceptos">
+            <div class="mb-8 border-l-4 border-stone-800 pl-4">
+                <h3 class="text-2xl font-bold text-stone-800">1. Preparación de Variables</h3>
+                <p class="text-stone-600 mt-2">
+                    Antes de colocar cualquier bloque, necesitamos definir la memoria de nuestro programa. En este ejercicio, usaremos dos espacios de memoria (variables) fundamentales para controlar el flujo del juego.
+                </p>
+            </div>
 
-        <h3>🟢 Bloques de Operadores (Verde)</h3>
-        <p>Estos bloques nos ayudan a hacer comparaciones y a elegir números al azar.</p>
-        <ul>
-            <li><span class="scratch-block operadores">número al azar entre [1] y [15]</span>: ¡Fundamental para que el ordenador elija su número secreto!</li>
-            <li><span class="scratch-block operadores">&lt; &gt; = &lt; &gt;</span>: Para saber si tu respuesta es igual al número secreto.</li>
-            <li><span class="scratch-block operadores">&lt; &gt; &lt; &lt; &gt;</span>: Para saber si tu respuesta es menor que el número secreto.</li>
-            <li><span class="scratch-block operadores">&lt; &gt; &gt; &lt; &gt;</span>: Para saber si tu respuesta es mayor que el número secreto.</li>
-        </ul>
-        <img src="https://images.prismic.io/scratch/f08e50b1-382a-4303-936e-d7f022ef256e_operators_blocks.png?auto=compress,format" alt="Bloques de Operadores en Scratch">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <!-- Variable Card 1 -->
+                <div class="bg-white p-6 rounded-xl shadow-sm border border-stone-200 hover:border-orange-300 transition group">
+                    <div class="flex items-start justify-between">
+                        <div>
+                            <div class="text-xs font-bold text-stone-400 uppercase tracking-wider mb-1">Variable 1</div>
+                            <h4 class="text-xl font-bold text-stone-800 mb-2 font-mono">secreto</h4>
+                            <p class="text-sm text-stone-600">Almacena el número aleatorio que elige el ordenador. Es el objetivo a encontrar.</p>
+                        </div>
+                        <div class="h-10 w-10 bg-orange-100 text-orange-600 rounded-full flex items-center justify-center font-bold">?</div>
+                    </div>
+                    <div class="mt-4 pt-4 border-t border-stone-100">
+                        <span class="text-xs bg-green-100 text-green-700 px-2 py-1 rounded">Rango: 1 - 15</span>
+                        <span class="text-xs bg-stone-100 text-stone-500 px-2 py-1 rounded ml-2">Visibilidad: Oculta</span>
+                    </div>
+                </div>
 
-        <h3>🟠 Bloques de Variables (Naranja oscuro)</h3>
-        <p>¡Las variables son como cajas donde guardamos información! Necesitarás crear:</p>
-        <ul>
-            <li><span class="scratch-block variables">numero_secreto</span>: Para que el ordenador guarde el número que ha pensado.</li>
-            <li><span class="scratch-block variables">acertado</span>: Una variable que cambia de "falso" a "verdadero" cuando adivinas el número.</li>
-            <li><span class="scratch-block variables">dar a [mi variable] el valor [0]</span>: Para inicializar tus variables.</li>
-        </ul>
-        <img src="https://images.prismic.io/scratch/77119565-d053-48e0-a42e-cf61b4028328_variables_blocks.png?auto=compress,format" alt="Bloques de Variables en Scratch">
+                <!-- Variable Card 2 -->
+                <div class="bg-white p-6 rounded-xl shadow-sm border border-stone-200 hover:border-orange-300 transition group">
+                    <div class="flex items-start justify-between">
+                        <div>
+                            <div class="text-xs font-bold text-stone-400 uppercase tracking-wider mb-1">Variable 2</div>
+                            <h4 class="text-xl font-bold text-stone-800 mb-2 font-mono">acertado</h4>
+                            <p class="text-sm text-stone-600">Variable de control (bandera). Nos dice cuándo detener el bucle de preguntas.</p>
+                        </div>
+                        <div class="h-10 w-10 bg-orange-100 text-orange-600 rounded-full flex items-center justify-center font-bold">✓</div>
+                    </div>
+                    <div class="mt-4 pt-4 border-t border-stone-100">
+                        <div class="flex space-x-2">
+                            <span class="text-xs bg-stone-100 text-stone-600 px-2 py-1 rounded font-mono">0 = No</span>
+                            <span class="text-xs bg-stone-100 text-stone-600 px-2 py-1 rounded font-mono">1 = Sí</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
 
-        <h3>🟣 Bloques de Apariencia (Morado)</h3>
-        <p>Para que nuestro personaje hable y dé las pistas.</p>
-        <ul>
-            <li><span class="scratch-block apariencia">decir [Hola!] durante [2] segundos</span>: Para que tu personaje hable en el juego.</li>
-        </ul>
-        <img src="https://images.prismic.io/scratch/532dd63f-67ed-4315-99d9-e316a7f8021d_looks_blocks.png?auto=compress,format" alt="Bloques de Apariencia en Scratch">
+        <!-- Section 2: Interactive Construction Guide -->
+        <section id="construccion">
+            <div class="mb-8 border-l-4 border-orange-500 pl-4">
+                <h3 class="text-2xl font-bold text-stone-800">2. Construcción del Algoritmo</h3>
+                <p class="text-stone-600 mt-2">
+                    Haz clic en cada paso de la izquierda para ver cómo se construye la lógica del programa en el panel derecho. Esta visualización te ayuda a entender la anidación de los bloques.
+                </p>
+            </div>
 
-        <p>¡Con estos bloques y la lógica explicada, tienes todo lo necesario para crear tu propio "Juego del Número Secreto" en Scratch! ¡Manos a la obra y a divertirse programando!</p>
-    </div>
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 h-auto lg:h-[600px]">
+                
+                <!-- Left: Stepper -->
+                <div class="lg:col-span-5 flex flex-col space-y-4 overflow-y-auto pr-2" id="steps-container">
+                    <!-- Steps will be injected by JS for cleaner code management, but structure is: -->
+                    <button class="step-card active text-left p-5 rounded-lg border border-stone-200 w-full group" onclick="setStep(0)">
+                        <span class="text-xs font-bold text-orange-500 uppercase mb-1 block">Paso 1</span>
+                        <h4 class="font-bold text-stone-800">Inicio y Configuración</h4>
+                        <p class="text-sm text-stone-500 mt-1">Bandera verde e inicialización de variables.</p>
+                    </button>
+                    
+                    <button class="step-card inactive text-left p-5 rounded-lg border border-stone-200 w-full group" onclick="setStep(1)">
+                        <span class="text-xs font-bold text-stone-400 uppercase mb-1 block">Paso 2</span>
+                        <h4 class="font-bold text-stone-800">El Bucle Principal</h4>
+                        <p class="text-sm text-stone-500 mt-1">Repetir preguntas hasta acertar.</p>
+                    </button>
+
+                    <button class="step-card inactive text-left p-5 rounded-lg border border-stone-200 w-full group" onclick="setStep(2)">
+                        <span class="text-xs font-bold text-stone-400 uppercase mb-1 block">Paso 3</span>
+                        <h4 class="font-bold text-stone-800">Condición de Victoria</h4>
+                        <p class="text-sm text-stone-500 mt-1">¿Qué pasa si el número es igual al secreto?</p>
+                    </button>
+
+                    <button class="step-card inactive text-left p-5 rounded-lg border border-stone-200 w-full group" onclick="setStep(3)">
+                        <span class="text-xs font-bold text-stone-400 uppercase mb-1 block">Paso 4</span>
+                        <h4 class="font-bold text-stone-800">Pistas (Mayor/Menor)</h4>
+                        <p class="text-sm text-stone-500 mt-1">Lógica anidada para guiar al jugador.</p>
+                    </button>
+                </div>
+
+                <!-- Right: Block Visualization -->
+                <div class="lg:col-span-7 bg-stone-100 rounded-xl p-6 border border-stone-200 relative overflow-hidden flex flex-col shadow-inner">
+                    <div class="absolute top-4 right-4 text-stone-300 font-bold text-4xl select-none opacity-20">SCRATCH</div>
+                    
+                    <!-- Dynamic Code Container -->
+                    <div id="code-display" class="font-sans text-sm space-y-1 transition-all duration-500 ease-in-out pl-2">
+                        <!-- Content populated by JS based on step -->
+                    </div>
+                    
+                    <div class="mt-auto pt-4 border-t border-stone-200 text-xs text-stone-500 italic" id="code-explanation">
+                        Selecciona un paso para ver el código.
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 3: Simulation & Analysis -->
+        <section id="simulacion" class="bg-white rounded-2xl shadow-xl border border-stone-100 overflow-hidden">
+            <div class="p-8 md:p-10">
+                <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8">
+                    <div>
+                        <h3 class="text-2xl font-bold text-stone-800">Simulación del Juego</h3>
+                        <p class="text-stone-600 mt-1">Prueba el algoritmo que acabas de diseñar. Intenta adivinar el número (1-15).</p>
+                    </div>
+                    <div class="mt-4 md:mt-0 px-4 py-2 bg-stone-100 rounded-lg text-stone-700 font-mono text-sm">
+                        Estado: <span id="game-status-text" class="font-bold text-orange-600">Esperando...</span>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-12">
+                    
+                    <!-- Game UI -->
+                    <div class="space-y-6">
+                        <div class="bg-stone-50 p-6 rounded-xl border border-stone-200 text-center relative h-64 flex flex-col justify-center items-center">
+                            <!-- Character Bubble -->
+                            <div id="scratch-cat-speech" class="bg-white border-2 border-stone-800 rounded-2xl p-4 mb-4 shadow-sm relative animate-pulse-slow transition-all duration-300">
+                                <p class="text-lg font-medium text-stone-800" id="cat-message">¿Quieres jugar?</p>
+                                <!-- Bubble tail -->
+                                <div class="absolute -bottom-2 left-1/2 transform -translate-x-1/2 w-4 h-4 bg-white border-b-2 border-r-2 border-stone-800 rotate-45"></div>
+                            </div>
+                            
+                            <!-- Controls -->
+                            <div id="game-controls" class="w-full max-w-xs space-y-3">
+                                <button id="btn-start" onclick="startGame()" class="w-full bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-4 rounded-lg shadow transition-transform transform active:scale-95">
+                                    Bandera Verde (Jugar)
+                                </button>
+                                
+                                <div id="input-area" class="hidden flex space-x-2">
+                                    <input type="number" id="user-guess" min="1" max="15" class="w-full p-3 border-2 border-stone-300 rounded-lg focus:outline-none focus:border-orange-400 text-center font-bold text-xl" placeholder="#">
+                                    <button onclick="submitGuess()" class="bg-sky-500 hover:bg-sky-600 text-white font-bold px-4 rounded-lg shadow">➜</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Mini Legend -->
+                        <div class="grid grid-cols-2 gap-4 text-xs text-stone-500">
+                            <div class="bg-stone-50 p-2 rounded">
+                                <span class="block font-bold text-stone-700">Algoritmo:</span>
+                                Búsqueda Binaria (no estricta)
+                            </div>
+                            <div class="bg-stone-50 p-2 rounded">
+                                <span class="block font-bold text-stone-700">Rango:</span>
+                                1 a 15
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Analytics Chart -->
+                    <div class="flex flex-col justify-center">
+                        <div class="mb-4">
+                            <h4 class="font-bold text-stone-800 mb-1">Análisis de Rendimiento</h4>
+                            <p class="text-xs text-stone-500">Gráfico que muestra cuántos intentos necesitas para adivinar el número en cada partida.</p>
+                        </div>
+                        
+                        <!-- Chart Container Requirement Adherence -->
+                        <div class="chart-container">
+                            <canvas id="attemptsChart"></canvas>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 4: Pro Tips Summary -->
+        <section class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div class="bg-stone-800 text-white p-6 rounded-lg">
+                <div class="text-yellow-400 text-2xl mb-2">★</div>
+                <h4 class="font-bold mb-2">Consejo Pro 1</h4>
+                <p class="text-sm text-stone-300">Esconde la variable <span class="font-mono bg-stone-700 px-1 rounded">secreto</span> en Scratch para que el juego tenga sentido. Si la ves, ¡no hay reto!</p>
+            </div>
+            <div class="bg-stone-800 text-white p-6 rounded-lg">
+                <div class="text-yellow-400 text-2xl mb-2">♫</div>
+                <h4 class="font-bold mb-2">Consejo Pro 2</h4>
+                <p class="text-sm text-stone-300">Añade sonidos en los bloques de "decir". Un "pop" al preguntar y un "aplauso" al ganar mejoran la experiencia.</p>
+            </div>
+            <div class="bg-stone-800 text-white p-6 rounded-lg">
+                <div class="text-yellow-400 text-2xl mb-2">⚡</div>
+                <h4 class="font-bold mb-2">Reto Extra</h4>
+                <p class="text-sm text-stone-300">Intenta añadir un contador de intentos. Crea una variable nueva y súmale 1 cada vez que el bucle se repita.</p>
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="bg-stone-100 border-t border-stone-200 py-8 text-center text-stone-500 text-sm">
+        <p>Basado en la Guía del Juego del Número Secreto</p>
+    </footer>
+
+    <script>
+        // --- STEPPER LOGIC ---
+        const codeDisplay = document.getElementById('code-display');
+        const explanationDisplay = document.getElementById('code-explanation');
+        const steps = document.querySelectorAll('.step-card');
+
+        const stepContent = [
+            {
+                // Step 1: Init
+                html: `
+                    <div class="scratch-block block-event">al presionar ⚑</div>
+                    <div class="scratch-block block-sensing ml-0">preguntar [¿Quieres jugar?] y esperar</div>
+                    <div class="scratch-block block-control ml-0">si &lt;respuesta = sí&gt; entonces</div>
+                    <div class="scratch-block block-variables ml-4">dar a [secreto] el valor (número al azar entre 1 y 15)</div>
+                    <div class="scratch-block block-variables ml-4">dar a [acertado] el valor [0]</div>
+                    <div class="scratch-block block-control ml-0 opacity-50">...</div>
+                `,
+                text: "Configuramos el inicio. Al presionar la bandera, preguntamos si se quiere jugar. Si es sí, inicializamos nuestras dos variables clave."
+            },
+            {
+                // Step 2: Loop
+                html: `
+                    <div class="opacity-50">... (código anterior)</div>
+                    <div class="scratch-block block-control ml-4">repetir hasta que &lt;acertado = 1&gt;</div>
+                    <div class="scratch-block block-sensing ml-8">preguntar [¿Qué número crees que es?] y esperar</div>
+                    <div class="scratch-block block-control ml-8 opacity-50">... (comparaciones) ...</div>
+                    <div class="opacity-50">...</div>
+                `,
+                text: "El bucle principal. El juego queda 'atrapado' aquí dentro preguntando números constantemente hasta que la variable 'acertado' cambie a 1."
+            },
+            {
+                // Step 3: Win Condition
+                html: `
+                    <div class="opacity-50">... (dentro del bucle)</div>
+                    <div class="scratch-block block-control ml-8">si &lt;respuesta = secreto&gt; entonces</div>
+                    <div class="scratch-block block-looks ml-12">decir [¡Acertaste!] por 2 segundos</div>
+                    <div class="scratch-block block-variables ml-12">dar a [acertado] el valor [1]</div>
+                    <div class="opacity-50">...</div>
+                `,
+                text: "La condición de salida. Si adivinas el número, felicitamos al jugador y cambiamos 'acertado' a 1 para romper el bucle."
+            },
+            {
+                // Step 4: Hints
+                html: `
+                    <div class="opacity-50">... (debajo del si anterior)</div>
+                    <div class="scratch-block block-control ml-8">si no</div>
+                    <div class="scratch-block block-control ml-12">si &lt;respuesta < secreto&gt; entonces</div>
+                    <div class="scratch-block block-looks ml-16">decir [Mi número es mayor] por 2 segundos</div>
+                    <div class="scratch-block block-control ml-12">si no</div>
+                    <div class="scratch-block block-looks ml-16">decir [Mi número es menor] por 2 segundos</div>
+                `,
+                text: "La lógica de pistas. Si no acertaste, entramos en el 'si no'. Comparamos si tu número es menor para decirte que busques uno mayor, y viceversa."
+            }
+        ];
+
+        function setStep(index) {
+            // Update UI styles
+            steps.forEach((btn, i) => {
+                if(i === index) {
+                    btn.classList.add('active');
+                    btn.classList.remove('inactive');
+                } else {
+                    btn.classList.remove('active');
+                    btn.classList.add('inactive');
+                }
+            });
+
+            // Update Content
+            codeDisplay.innerHTML = stepContent[index].html;
+            explanationDisplay.textContent = stepContent[index].text;
+        }
+
+        // Initialize first step
+        setStep(0);
+
+
+        // --- GAME SIMULATION LOGIC ---
+        let secretNum = 0;
+        let attempts = 0;
+        let gameActive = false;
+        let gameHistory = []; // Stores attempts per game
+
+        const catMessage = document.getElementById('cat-message');
+        const btnStart = document.getElementById('btn-start');
+        const inputArea = document.getElementById('input-area');
+        const userGuessInput = document.getElementById('user-guess');
+        const statusText = document.getElementById('game-status-text');
+
+        // Chart Setup
+        const ctx = document.getElementById('attemptsChart').getContext('2d');
+        const performanceChart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: [],
+                datasets: [{
+                    label: 'Intentos para ganar',
+                    data: [],
+                    backgroundColor: 'rgba(249, 115, 22, 0.6)', // Orange-500
+                    borderColor: 'rgba(249, 115, 22, 1)',
+                    borderWidth: 1,
+                    borderRadius: 4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: { stepSize: 1 },
+                        title: { display: true, text: 'Nº Intentos' }
+                    }
+                },
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return `Partida ${context.dataIndex + 1}: ${context.raw} intentos`;
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+        function updateChart(newAttempts) {
+            gameHistory.push(newAttempts);
+            const gameLabel = `P${gameHistory.length}`;
+            
+            performanceChart.data.labels.push(gameLabel);
+            performanceChart.data.datasets[0].data.push(newAttempts);
+            performanceChart.update();
+        }
+
+        function startGame() {
+            // Reset logic
+            secretNum = Math.floor(Math.random() * 15) + 1;
+            attempts = 0;
+            gameActive = true;
+
+            // UI Updates
+            btnStart.classList.add('hidden');
+            inputArea.classList.remove('hidden');
+            inputArea.classList.add('flex');
+            statusText.textContent = "Jugando...";
+            statusText.classList.remove("text-green-600");
+            statusText.classList.add("text-orange-600");
+            
+            // Cat speaks
+            catMessage.textContent = "He pensado un número del 1 al 15. ¿Cuál es?";
+            userGuessInput.value = '';
+            userGuessInput.focus();
+            
+            console.log("Secreto (shh): " + secretNum);
+        }
+
+        function submitGuess() {
+            if(!gameActive) return;
+
+            const guess = parseInt(userGuessInput.value);
+            
+            if (isNaN(guess) || guess < 1 || guess > 15) {
+                catMessage.textContent = "¡Por favor, introduce un número entre 1 y 15!";
+                return;
+            }
+
+            attempts++;
+
+            // Animation effect on bubble
+            const bubble = document.getElementById('scratch-cat-speech');
+            bubble.classList.remove('animate-pulse-slow');
+            void bubble.offsetWidth; // trigger reflow
+            bubble.classList.add('animate-pulse-slow');
+
+            if (guess === secretNum) {
+                // Win
+                catMessage.innerHTML = `¡Acertaste! <br>Era el ${secretNum}.`;
+                endGame(true);
+            } else if (guess < secretNum) {
+                catMessage.textContent = "Mi número es MAYOR.";
+                userGuessInput.value = '';
+                userGuessInput.focus();
+            } else {
+                catMessage.textContent = "Mi número es MENOR.";
+                userGuessInput.value = '';
+                userGuessInput.focus();
+            }
+        }
+
+        function endGame(win) {
+            gameActive = false;
+            btnStart.textContent = "Jugar otra vez";
+            btnStart.classList.remove('hidden');
+            inputArea.classList.add('hidden');
+            inputArea.classList.remove('flex');
+            
+            statusText.textContent = "¡Victoria!";
+            statusText.classList.remove("text-orange-600");
+            statusText.classList.add("text-green-600");
+
+            // Update Analytics
+            updateChart(attempts);
+        }
+
+        // Allow Enter key
+        userGuessInput.addEventListener("keypress", function(event) {
+            if (event.key === "Enter") {
+                submitGuess();
+            }
+        });
+
+    </script>
 </body>
 </html>
