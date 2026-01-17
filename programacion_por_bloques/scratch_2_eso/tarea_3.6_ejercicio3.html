@@ -3,643 +3,552 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Guía Interactiva: Lluvia de albóndigas (Scratch)</title>
+    <title>Guía Interactiva: Lógica de Juego en Scratch</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700&display=swap');
-        body { font-family: 'Nunito', sans-serif; background-color: #FDFBF7; color: #4A5568; }
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap');
+        body { font-family: 'Inter', sans-serif; }
+        
+        /* Scratch-like Block Styling */
         .scratch-block {
-            background-color: #FFBF00; /* Events */
-            color: white;
             padding: 8px 12px;
-            border-radius: 8px;
+            border-radius: 4px;
+            color: white;
+            font-weight: 600;
+            font-size: 0.9rem;
             margin-bottom: 4px;
-            font-weight: bold;
-            box-shadow: 0 2px 0 rgba(0,0,0,0.1);
+            display: inline-block;
+            box-shadow: 0 2px 0 rgba(0,0,0,0.2);
             cursor: default;
         }
-        .scratch-motion { background-color: #4C97FF; }
-        .scratch-control { background-color: #FFAB19; }
-        .scratch-variable { background-color: #FF8C1A; }
-        .scratch-operator { background-color: #59C059; }
-        .scratch-sensing { background-color: #5CB1D6; }
-        .scratch-looks { background-color: #9966FF; }
+        .block-event { background-color: #FFBF00; border: 1px solid #cc9900; }
+        .block-control { background-color: #FFAB19; border: 1px solid #cf8b17; }
+        .block-motion { background-color: #4C97FF; border: 1px solid #3373cc; }
+        .block-variable { background-color: #FF8C1A; border: 1px solid #db7916; }
+        .block-looks { background-color: #9966FF; border: 1px solid #774dcB; }
+        .block-sensing { background-color: #5CB1D6; border: 1px solid #2E8EB8; }
         
+        /* Nesting for blocks */
+        .block-nest {
+            border-left: 3px solid rgba(0,0,0,0.2);
+            padding-left: 8px;
+            margin-left: 4px;
+            margin-top: 2px;
+            margin-bottom: 2px;
+        }
+
+        /* Chart Container Specifics per requirements */
         .chart-container {
             position: relative;
             width: 100%;
-            max-width: 600px;
+            max-width: 600px; /* Explicit max-width */
             margin-left: auto;
             margin-right: auto;
             height: 250px;
             max-height: 300px;
         }
-
-        .sim-canvas {
-            border: 2px solid #E2E8F0;
-            border-radius: 0.5rem;
-            background-color: #EDF2F7;
-            margin: 0 auto;
-            display: block;
-        }
-
-        /* Custom Scrollbar */
-        ::-webkit-scrollbar { width: 8px; }
-        ::-webkit-scrollbar-track { background: #f1f1f1; }
-        ::-webkit-scrollbar-thumb { background: #cbd5e0; border-radius: 4px; }
-        ::-webkit-scrollbar-thumb:hover { background: #a0aec0; }
     </style>
-    <!-- Chosen Palette: Warm Neutrals with Soft Accents (Purple/Green/Orange) to match a playful yet educational tone -->
+    <!-- Chosen Palette: Warm Neutrals & Scratch Accents (Interpreting "Warm Neutrals" base with functional color coding from Scratch domain) -->
     <!-- Application Structure Plan:
-         1. Hero Section: Context setting based on the Source Report (Avalanche history).
-         2. Simulation Lab: The core feature. A live HTML5 Canvas version of the game described in the text, paired with Chart.js analytics to visualize the 'Variables' (Score vs Speed) mentioned in the report. This proves the logic works.
-         3. Logic Deconstruction: An interactive tabbed interface to break down the specific Scratch blocks for Catcher vs Food, as detailed in the guide.
-         4. Asset & Setup Manager: A visual checklist for the initial configuration (size 50%, 5 items).
-         5. Challenge Board: Interactive suggestions for the "Retos" mentioned in the PDF.
-         Designed to move from "Experience" (Sim) to "Understanding" (Logic) to "Creation" (Setup).
+         1. Hero Section: Sets the context of the tutorial.
+         2. Interactive Workbench (Split Layout):
+            - Left Column: Step-by-Step Logic Explorer. Users toggle between steps (Movement, Jump, Obstacle) to see the code structure.
+            - Right Column: Live Simulation & Analytics. 
+              - Top: A Canvas implementing the game logic described in the source.
+              - Bottom: A Chart.js Line chart visualizing the 'Y Velocity' physics to explain the math behind the code.
+         3. Analysis Section: Tips and tricks presented as interactive cards.
+         Rationale: This structure separates the "Instruction" (Code) from the "Result" (Simulation), allowing the user to read the guide while simultaneously seeing the code execute and analyzing the physics data, reinforcing the learning process.
     -->
+    <!-- Visualization & Content Choices:
+         1. Canvas Game Simulation: 
+            - Goal: Inform/Change. 
+            - Method: HTML5 Canvas. 
+            - Logic: Replicates the Scratch logic (x += 10, y velocity loop) in JS.
+            - Justification: The user needs to see the result of the instructions.
+         2. Physics Analysis Chart (Chart.js): 
+            - Goal: Inform/Relationships. 
+            - Method: Line Chart. 
+            - Interaction: Updates in real-time when the character jumps.
+            - Justification: Visualizes Step 1B (Gravity/Parabola) to explain *why* we subtract -1.5 from velocity.
+         3. Logic Block Builder (HTML/CSS):
+            - Goal: Organize/Inform.
+            - Method: Styled Divs (No SVG).
+            - Interaction: Click to highlight explanation.
+            - Justification: Translates text-based instructions into visual "blocks" familiar to Scratch users.
+    -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
 </head>
-<body class="antialiased min-h-screen flex flex-col">
+<body class="bg-stone-50 text-stone-800 selection:bg-orange-200">
 
-    <!-- Navigation / Header -->
-    <nav class="bg-white shadow-sm sticky top-0 z-50">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex justify-between h-16">
-                <div class="flex items-center">
-                    <span class="text-2xl mr-2">🏰</span>
-                    <h1 class="text-xl font-bold text-gray-800">Scratch Lab: Lluvia de albóndigas</h1>
-                </div>
-                <div class="hidden sm:flex items-center space-x-4">
-                    <button onclick="scrollToSection('simulation')" class="text-gray-600 hover:text-purple-600 px-3 py-2 rounded-md text-sm font-medium">Simulación</button>
-                    <button onclick="scrollToSection('logic')" class="text-gray-600 hover:text-purple-600 px-3 py-2 rounded-md text-sm font-medium">Lógica de Bloques</button>
-                    <button onclick="scrollToSection('setup')" class="text-gray-600 hover:text-purple-600 px-3 py-2 rounded-md text-sm font-medium">Configuración</button>
-                </div>
-            </div>
+    <!-- Header -->
+    <header class="bg-white border-b border-stone-200 sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <h1 class="text-xl font-bold text-stone-800 flex items-center gap-2">
+                <span class="text-2xl">🐱</span> Laboratorio de Lógica Scratch
+            </h1>
+            <nav class="hidden md:flex space-x-6">
+                <button onclick="scrollToSection('intro')" class="text-stone-500 hover:text-orange-600 transition-colors">Inicio</button>
+                <button onclick="scrollToSection('workbench')" class="text-stone-500 hover:text-orange-600 transition-colors">Taller Interactivo</button>
+                <button onclick="scrollToSection('tips')" class="text-stone-500 hover:text-orange-600 transition-colors">Mejoras</button>
+            </nav>
         </div>
-    </nav>
-
-    <!-- Hero Intro -->
-    <section class="bg-purple-50 border-b border-purple-100 py-10 px-4">
-        <div class="max-w-4xl mx-auto text-center">
-            <h2 class="text-3xl font-bold text-gray-800 mb-4">Diseñando un clásico "Avalanche"</h2>
-            <p class="text-lg text-gray-600 mb-6">
-                Basado en la guía original, este panel interactivo desglosa la mecánica del juego: 
-                <span class="font-semibold text-purple-700">recoger objetos</span>, 
-                gestionar <span class="font-semibold text-orange-600">variables</span> y 
-                aumentar la <span class="font-semibold text-red-600">dificultad</span> progresivamente.
-            </p>
-            <div class="flex justify-center gap-4 flex-wrap">
-                <div class="bg-white p-4 rounded-lg shadow-sm border border-gray-100 w-40">
-                    <div class="text-2xl mb-1">🍎</div>
-                    <div class="text-xs text-gray-500 uppercase tracking-wide">Objetivo</div>
-                    <div class="font-bold text-gray-700">Atrapar Comida</div>
-                </div>
-                <div class="bg-white p-4 rounded-lg shadow-sm border border-gray-100 w-40">
-                    <div class="text-2xl mb-1">📉</div>
-                    <div class="text-xs text-gray-500 uppercase tracking-wide">Mecánica</div>
-                    <div class="font-bold text-gray-700">Gravedad Variable</div>
-                </div>
-                <div class="bg-white p-4 rounded-lg shadow-sm border border-gray-100 w-40">
-                    <div class="text-2xl mb-1">🧱</div>
-                    <div class="text-xs text-gray-500 uppercase tracking-wide">Plataforma</div>
-                    <div class="font-bold text-gray-700">Scratch</div>
-                </div>
-            </div>
-        </div>
-    </section>
+    </header>
 
     <!-- Main Content -->
-    <main class="flex-grow max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full">
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-12">
 
-        <!-- Simulation Section -->
-        <section id="simulation" class="mb-16 scroll-mt-20">
-            <div class="mb-6">
-                <h3 class="text-2xl font-bold text-gray-800 flex items-center">
-                    <span class="bg-purple-600 text-white rounded-full w-8 h-8 flex items-center justify-center text-sm mr-3">1</span>
-                    Laboratorio de Simulación y Datos
-                </h3>
-                <p class="text-gray-600 mt-2">
-                    Experimenta con la lógica del juego en tiempo real. Observa cómo interactúan las variables 
-                    <code>puntos</code> y <code>velocidad</code> tal como se describe en la guía. Usa las flechas ⬅️ ➡️ para mover la "cesta".
-                </p>
-            </div>
+        <!-- Introduction -->
+        <section id="intro" class="text-center max-w-3xl mx-auto">
+            <h2 class="text-3xl font-bold text-stone-900 mb-4">Tu Primer Juego de Plataformas</h2>
+            <p class="text-lg text-stone-600 leading-relaxed">
+                Esta aplicación interactiva transforma la guía de texto en un laboratorio funcional. 
+                Aquí podrás ver cómo las instrucciones paso a paso se convierten en código real, 
+                visualizar la física detrás del salto y probar la lógica del juego en tiempo real.
+                Analiza los bloques, observa los datos y ¡evita el obstáculo!
+            </p>
+        </section>
 
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                <!-- Game Canvas -->
-                <div class="bg-white p-4 rounded-xl shadow-md border border-gray-200 flex flex-col items-center">
-                    <div class="w-full flex justify-between items-center mb-4">
-                        <div class="flex gap-4 text-sm font-bold">
-                            <div class="bg-yellow-100 text-yellow-800 px-3 py-1 rounded-full">Puntos: <span id="scoreDisplay">0</span></div>
-                            <div class="bg-red-100 text-red-800 px-3 py-1 rounded-full">Velocidad Y: <span id="speedDisplay">-5</span></div>
-                        </div>
-                        <button id="toggleGameBtn" class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-1 rounded shadow text-sm transition-colors">
-                            Iniciar Simulación
-                        </button>
-                    </div>
-                    <canvas id="gameCanvas" width="400" height="300" class="sim-canvas w-full max-w-[400px]"></canvas>
-                    <p class="text-xs text-gray-400 mt-2">Controles: Flechas izquierda/derecha o tocar lados de la pantalla.</p>
-                </div>
-
-                <!-- Live Charts -->
-                <div class="bg-white p-4 rounded-xl shadow-md border border-gray-200">
-                    <h4 class="font-bold text-gray-700 mb-2 border-b pb-2">Análisis de Variables en Tiempo Real</h4>
-                    
-                    <div class="mb-6">
-                        <p class="text-xs text-gray-500 mb-1">Progresión de Puntos (Acumulativo)</p>
-                        <!-- Chart Container for Score -->
-                        <div class="chart-container">
-                            <canvas id="scoreChart"></canvas>
-                        </div>
-                    </div>
-                    
-                    <div>
-                        <p class="text-xs text-gray-500 mb-1">Aumento de Dificultad (Velocidad de Caída)</p>
-                        <!-- Chart Container for Speed -->
-                        <div class="chart-container h-40 max-h-48">
-                            <canvas id="speedChart"></canvas>
-                        </div>
-                    </div>
-                </div>
-            </div>
+        <!-- Workbench Area: Split View -->
+        <section id="workbench" class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
             
-            <!-- Insight Block -->
-            <div class="mt-6 bg-blue-50 border-l-4 border-blue-400 p-4 rounded-r-lg">
-                <div class="flex">
-                    <div class="flex-shrink-0">
-                        <span class="text-xl">💡</span>
+            <!-- Left Column: Step-by-Step Instructions -->
+            <div class="lg:col-span-5 space-y-6">
+                <div class="bg-white rounded-xl shadow-sm border border-stone-200 p-6">
+                    <h3 class="text-lg font-bold text-stone-800 mb-2 border-b border-stone-100 pb-2">Guía de Programación</h3>
+                    <p class="text-sm text-stone-500 mb-4">
+                        Selecciona un paso para ver los bloques lógicos necesarios. El simulador a la derecha ejecutará este código.
+                    </p>
+
+                    <!-- Steps Navigation -->
+                    <div class="flex space-x-2 mb-6 overflow-x-auto pb-2">
+                        <button onclick="setStep(1)" id="btn-step-1" class="px-4 py-2 rounded-full text-sm font-semibold bg-orange-500 text-white shadow-md transition-all whitespace-nowrap">Paso 1: Movimiento</button>
+                        <button onclick="setStep(2)" id="btn-step-2" class="px-4 py-2 rounded-full text-sm font-semibold bg-stone-200 text-stone-600 hover:bg-stone-300 transition-all whitespace-nowrap">Paso 2: Obstáculos</button>
                     </div>
-                    <div class="ml-3">
-                        <h3 class="text-sm font-bold text-blue-800">La lógica detrás de la simulación</h3>
-                        <p class="text-sm text-blue-700 mt-1">
-                            Como indica la guía, cada vez que tocas un objeto:
-                            1. Sumamos <strong>10 puntos</strong>.
-                            2. Restamos <strong>-0.5</strong> a la velocidad (haciéndola más rápida hacia abajo).
-                            Esta retroalimentación crea la curva de dificultad que ves en los gráficos.
+
+                    <!-- Dynamic Content Container -->
+                    <div id="instruction-content" class="space-y-4">
+                        <!-- Content injected by JS -->
+                    </div>
+                </div>
+
+                <!-- Explanation Box -->
+                <div class="bg-orange-50 rounded-xl border border-orange-100 p-5">
+                    <h4 class="font-bold text-orange-800 flex items-center gap-2">
+                        <span>💡</span> ¿Por qué funciona así?
+                    </h4>
+                    <p id="logic-explanation" class="text-sm text-orange-900 mt-2 leading-relaxed">
+                        Selecciona un paso arriba para ver la explicación lógica.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Right Column: Simulation & Data Viz -->
+            <div class="lg:col-span-7 space-y-6">
+                
+                <!-- Game Canvas -->
+                <div class="bg-stone-900 rounded-xl shadow-lg overflow-hidden relative">
+                    <div class="absolute top-4 left-4 z-10 bg-black/50 text-white text-xs px-2 py-1 rounded backdrop-blur-sm">
+                        Simulación en Tiempo Real
+                    </div>
+                    <div class="absolute top-4 right-4 z-10 flex gap-2">
+                         <button onclick="resetGame()" class="bg-white/10 hover:bg-white/20 text-white text-xs px-3 py-1 rounded backdrop-blur-sm transition-colors border border-white/20">🔄 Reiniciar</button>
+                    </div>
+                    
+                    <!-- Canvas Container -->
+                    <div class="w-full h-80 flex items-center justify-center bg-stone-800" id="game-container">
+                        <canvas id="gameCanvas" width="600" height="320" class="max-w-full h-full object-contain"></canvas>
+                    </div>
+
+                    <!-- Controls Hint -->
+                    <div class="bg-stone-800 px-4 py-2 flex justify-between items-center border-t border-stone-700">
+                        <div class="flex gap-4 text-xs text-stone-400">
+                            <span class="flex items-center gap-1"><span class="bg-stone-700 px-1 rounded">←</span> <span class="bg-stone-700 px-1 rounded">→</span> Mover</span>
+                            <span class="flex items-center gap-1"><span class="bg-stone-700 px-1.5 rounded">Espacio</span> Saltar</span>
+                        </div>
+                        <div class="text-xs font-mono text-orange-400" id="score-display">Puntos: 0</div>
+                    </div>
+                </div>
+
+                <!-- Data Analysis Chart -->
+                <div class="bg-white rounded-xl shadow-sm border border-stone-200 p-6">
+                    <div class="mb-4">
+                        <h3 class="text-base font-bold text-stone-800">Análisis de Física: Curva de Salto</h3>
+                        <p class="text-xs text-stone-500">
+                            Visualización de la variable <span class="font-mono bg-stone-100 px-1 rounded">velocidad Y</span> en tiempo real. Observa la parábola creada por la gravedad (-1.5).
                         </p>
                     </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- Logic Breakdown Section -->
-        <section id="logic" class="mb-16 scroll-mt-20">
-            <div class="mb-6">
-                <h3 class="text-2xl font-bold text-gray-800 flex items-center">
-                    <span class="bg-purple-600 text-white rounded-full w-8 h-8 flex items-center justify-center text-sm mr-3">2</span>
-                    Arquitectura del Código
-                </h3>
-                <p class="text-gray-600 mt-2">
-                    Selecciona un actor para ver cómo se traduce la guía en bloques lógicos. Esta estructura es la columna vertebral de tu juego.
-                </p>
-            </div>
-
-            <div class="bg-white rounded-xl shadow-md border border-gray-200 overflow-hidden">
-                <!-- Tabs -->
-                <div class="flex border-b border-gray-200 bg-gray-50">
-                    <button class="tab-btn px-6 py-4 text-sm font-medium text-purple-600 border-b-2 border-purple-600 focus:outline-none bg-white" onclick="switchTab('catcher')">
-                        👸 El Personaje (Catcher)
-                    </button>
-                    <button class="tab-btn px-6 py-4 text-sm font-medium text-gray-500 hover:text-gray-700 focus:outline-none" onclick="switchTab('food')">
-                        🍎 La Comida (Objetos)
-                    </button>
-                    <button class="tab-btn px-6 py-4 text-sm font-medium text-gray-500 hover:text-gray-700 focus:outline-none" onclick="switchTab('init')">
-                        🏁 Inicialización
-                    </button>
-                </div>
-
-                <!-- Tab Content -->
-                <div class="p-6 min-h-[400px]">
                     
-                    <!-- Catcher Content -->
-                    <div id="content-catcher" class="tab-content block">
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                            <div>
-                                <h4 class="text-lg font-bold text-gray-800 mb-3">Movimiento Horizontal</h4>
-                                <p class="text-sm text-gray-600 mb-4">
-                                    El personaje debe seguir al ratón o responder al teclado. La guía sugiere actualizar la posición X constantemente.
-                                </p>
-                                <div class="bg-gray-100 p-4 rounded-lg font-mono text-sm border border-gray-300">
-                                    <div class="scratch-block scratch-events">al presionar 🚩</div>
-                                    <div class="scratch-block scratch-control">por siempre</div>
-                                    <div class="pl-4 border-l-2 border-gray-300 ml-2">
-                                        <div class="scratch-block scratch-motion">dar a x el valor (posición x del ratón)</div>
-                                        <div class="text-gray-500 italic py-1">// Opcional: controles de teclado</div>
-                                        <div class="scratch-block scratch-control">si (tecla flecha derecha presionada?) entonces</div>
-                                        <div class="pl-4 border-l-2 border-gray-300 ml-2">
-                                            <div class="scratch-block scratch-motion">sumar a x (10)</div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="flex flex-col justify-center items-center bg-purple-50 rounded-lg p-6">
-                                <div class="text-4xl mb-4">👸</div>
-                                <p class="text-center text-sm font-medium text-purple-800">
-                                    El "Catcher" es el ancla del jugador.<br>
-                                    Debe estar siempre en la parte inferior (Y fijo).
-                                </p>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Food Content -->
-                    <div id="content-food" class="tab-content hidden">
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                            <div>
-                                <h4 class="text-lg font-bold text-gray-800 mb-3">El Bucle de Caída</h4>
-                                <p class="text-sm text-gray-600 mb-4">
-                                    Esta es la lógica compleja. Controla la aparición, caída, colisión y reinicio.
-                                </p>
-                                <div class="bg-gray-100 p-4 rounded-lg font-mono text-sm border border-gray-300 h-96 overflow-y-auto">
-                                    <div class="scratch-block scratch-control">por siempre</div>
-                                    <div class="pl-4 border-l-2 border-gray-300 ml-2">
-                                        <div class="scratch-block scratch-motion">ir a x: (aleatorio -200 a 200) y: 180</div>
-                                        <div class="scratch-block scratch-looks">mostrar</div>
-                                        <div class="scratch-block scratch-control">repetir hasta que (¿tocando borde? o ¿tocando Catcher?)</div>
-                                        <div class="pl-4 border-l-2 border-gray-300 ml-2">
-                                            <div class="scratch-block scratch-motion">sumar a y (velocidad)</div>
-                                        </div>
-                                        <div class="scratch-block scratch-control">si (¿tocando Catcher?) entonces</div>
-                                        <div class="pl-4 border-l-2 border-gray-300 ml-2">
-                                            <div class="scratch-block scratch-variable">sumar a [puntos] (10)</div>
-                                            <div class="scratch-block scratch-variable">sumar a [velocidad] (-0.5)</div>
-                                            <div class="scratch-block scratch-sound">tocar sonido [Chomp]</div>
-                                        </div>
-                                        <div class="scratch-block scratch-looks">esconder</div>
-                                        <div class="scratch-block scratch-control">esperar (aleatorio 1 a 3) segundos</div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div>
-                                <h4 class="text-lg font-bold text-gray-800 mb-3">Puntos Clave</h4>
-                                <ul class="space-y-3">
-                                    <li class="flex items-start">
-                                        <span class="text-green-500 mr-2">✔</span>
-                                        <span class="text-sm text-gray-700"><strong>Aleatoriedad:</strong> La posición X y el tiempo de espera varían para que no sea predecible.</span>
-                                    </li>
-                                    <li class="flex items-start">
-                                        <span class="text-green-500 mr-2">✔</span>
-                                        <span class="text-sm text-gray-700"><strong>Colisión:</strong> Verificamos dos cosas: si tocó el suelo (borde) o si lo atrapamos.</span>
-                                    </li>
-                                    <li class="flex items-start">
-                                        <span class="text-green-500 mr-2">✔</span>
-                                        <span class="text-sm text-gray-700"><strong>Feedback:</strong> El sonido y el cambio de variable dan respuesta inmediata al jugador.</span>
-                                    </li>
-                                </ul>
-                                <div class="mt-6 p-4 bg-orange-50 border border-orange-200 rounded-lg">
-                                    <p class="text-xs text-orange-800 font-bold">RETO DEL DOCUMENTO:</p>
-                                    <p class="text-sm text-orange-700 mt-1">
-                                        "¿Añadir elemento abajo?"<br>
-                                        Si la comida toca el borde y NO al personaje, podrías restar vidas. ¡Añade un bloque <code>si tocando borde entonces restar vida</code> dentro del bucle!
-                                    </p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Init Content -->
-                    <div id="content-init" class="tab-content hidden">
-                        <div class="flex flex-col space-y-4">
-                            <h4 class="text-lg font-bold text-gray-800">Preparación del Escenario</h4>
-                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                <div class="p-4 bg-white border rounded-lg shadow-sm">
-                                    <div class="scratch-block scratch-events">al presionar 🚩</div>
-                                    <div class="scratch-block scratch-looks">esconder</div>
-                                    <div class="scratch-block scratch-control">esperar (3) segundos</div>
-                                    <div class="scratch-block scratch-variable">dar a [puntos] el valor (0)</div>
-                                    <div class="scratch-block scratch-variable">dar a [velocidad] el valor (-5)</div>
-                                </div>
-                                <div class="flex flex-col justify-center text-sm text-gray-600">
-                                    <p class="mb-2"><strong>¿Por qué esconder?</strong> Para que no aparezcan todos los objetos de golpe en la pantalla.</p>
-                                    <p class="mb-2"><strong>¿Por qué esperar?</strong> Da tiempo al jugador a prepararse.</p>
-                                    <p><strong>Reinicio:</strong> Siempre resetea las variables al inicio para que el juego sea justo.</p>
-                                </div>
-                            </div>
-                        </div>
+                    <!-- Chart Container (Strictly Constrained) -->
+                    <div class="chart-container">
+                        <canvas id="physicsChart"></canvas>
                     </div>
                 </div>
+
             </div>
         </section>
 
-        <!-- Setup & Assets Section -->
-        <section id="setup" class="mb-16 scroll-mt-20">
+        <!-- Tips Section -->
+        <section id="tips" class="py-8">
             <div class="mb-6">
-                <h3 class="text-2xl font-bold text-gray-800 flex items-center">
-                    <span class="bg-purple-600 text-white rounded-full w-8 h-8 flex items-center justify-center text-sm mr-3">3</span>
-                    Lista de Configuración
-                </h3>
-                <p class="text-gray-600 mt-2">
-                    Asegúrate de tener estos elementos listos antes de empezar a programar.
+                <h3 class="text-2xl font-bold text-stone-800">Mejoras y Desafíos</h3>
+                <p class="text-stone-600 max-w-2xl">
+                    Una vez domines la lógica básica, utiliza estas ideas del reporte fuente para expandir tu juego.
                 </p>
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <!-- Asset Card 1 -->
-                <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200 text-center">
-                    <div class="text-4xl mb-3">🏞️</div>
-                    <h4 class="font-bold text-gray-800">El Fondo</h4>
-                    <p class="text-sm text-gray-500 mt-1">Un castillo o paisaje exterior.</p>
-                    <div class="mt-4 inline-block px-3 py-1 bg-gray-100 text-xs font-semibold rounded text-gray-600">Estático</div>
+                <!-- Tip 1 -->
+                <div class="group bg-white p-6 rounded-xl shadow-sm border border-stone-200 hover:border-orange-300 transition-all cursor-pointer">
+                    <div class="w-10 h-10 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center text-xl mb-4 group-hover:scale-110 transition-transform">🎨</div>
+                    <h4 class="font-bold text-stone-800 mb-2">Disfraces y Animación</h4>
+                    <p class="text-sm text-stone-600">
+                        Cambia el disfraz del personaje mientras se mueve para simular que corre. Usa el bloque "siguiente disfraz".
+                    </p>
                 </div>
 
-                <!-- Asset Card 2 -->
-                <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200 text-center relative overflow-hidden">
-                    <div class="absolute top-0 right-0 bg-red-500 text-white text-xs px-2 py-1 font-bold">CRÍTICO</div>
-                    <div class="text-4xl mb-3">👸</div>
-                    <h4 class="font-bold text-gray-800">Personaje Principal</h4>
-                    <p class="text-sm text-gray-500 mt-1">Princesa, Cesta o Cuenco.</p>
-                    <div class="mt-4 inline-block px-3 py-1 bg-red-100 text-xs font-semibold rounded text-red-600">Tamaño: 50%</div>
+                <!-- Tip 2 -->
+                <div class="group bg-white p-6 rounded-xl shadow-sm border border-stone-200 hover:border-orange-300 transition-all cursor-pointer">
+                    <div class="w-10 h-10 bg-green-100 text-green-600 rounded-full flex items-center justify-center text-xl mb-4 group-hover:scale-110 transition-transform">🏆</div>
+                    <h4 class="font-bold text-stone-800 mb-2">Sistema de Puntuación</h4>
+                    <p class="text-sm text-stone-600">
+                        Crea una variable "Puntos". Suma 1 cada vez que el obstáculo llegue al borde izquierdo (x < -230).
+                    </p>
                 </div>
 
-                <!-- Asset Card 3 -->
-                <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200 text-center relative overflow-hidden">
-                    <div class="absolute top-0 right-0 bg-red-500 text-white text-xs px-2 py-1 font-bold">X 5</div>
-                    <div class="text-4xl mb-3">🍩🍎🍌</div>
-                    <h4 class="font-bold text-gray-800">Comida</h4>
-                    <p class="text-sm text-gray-500 mt-1">5 Objetos diferentes.</p>
-                    <div class="mt-4 inline-block px-3 py-1 bg-red-100 text-xs font-semibold rounded text-red-600">Tamaño: 50%</div>
+                <!-- Tip 3 -->
+                <div class="group bg-white p-6 rounded-xl shadow-sm border border-stone-200 hover:border-orange-300 transition-all cursor-pointer">
+                    <div class="w-10 h-10 bg-red-100 text-red-600 rounded-full flex items-center justify-center text-xl mb-4 group-hover:scale-110 transition-transform">⛔</div>
+                    <h4 class="font-bold text-stone-800 mb-2">Suelo Seguro</h4>
+                    <p class="text-sm text-stone-600">
+                        Usa "¿tocando color?" para detectar el suelo, permitiendo plataformas a diferentes alturas.
+                    </p>
                 </div>
             </div>
         </section>
 
     </main>
 
-    <footer class="bg-white border-t border-gray-200 py-8 mt-auto">
-        <div class="max-w-7xl mx-auto px-4 text-center">
-            <p class="text-gray-500 text-sm">
-                Generado a partir de la guía "princesa y castillo.pdf" | Diseño de App Interactiva
-            </p>
-            <p class="text-gray-400 text-xs mt-2">
-                Utiliza Chart.js para visualización de datos y Vanilla JS para simulación lógica.
-            </p>
+    <!-- Footer -->
+    <footer class="bg-stone-100 border-t border-stone-200 py-8 mt-12">
+        <div class="max-w-7xl mx-auto px-4 text-center text-stone-500 text-sm">
+            <p>Generado a partir de la guía "Mi Primer Juego en Scratch". Implementación en Canvas y Tailwind.</p>
         </div>
     </footer>
 
+    <!-- JavaScript Logic -->
     <script>
-        // --- 1. Logic Visualization Tabs ---
-        function switchTab(tabId) {
-            // Hide all content
-            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
-            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('block'));
+        // --- DATA & CONTENT ---
+        const tutorialData = {
+            1: {
+                title: "Paso 1: Movimiento y Gravedad",
+                content: `
+                    <div class="space-y-4">
+                        <div>
+                            <h5 class="font-bold text-sm text-stone-700 mb-2">A. Evento Inicial</h5>
+                            <div class="scratch-block block-event">al presionar bandera verde 🚩</div>
+                            <div class="block-nest">
+                                <div class="scratch-block block-control">por siempre 🔄</div>
+                                <div class="block-nest">
+                                    <div class="scratch-block block-control">si &lt;tecla derecha&gt; entonces</div>
+                                    <div class="block-nest"><div class="scratch-block block-motion">sumar a x: 10</div></div>
+                                    <div class="scratch-block block-control">si &lt;tecla izquierda&gt; entonces</div>
+                                    <div class="block-nest"><div class="scratch-block block-motion">sumar a x: -10</div></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div>
+                            <h5 class="font-bold text-sm text-stone-700 mb-2">B. Lógica de Salto (Gravedad)</h5>
+                            <div class="scratch-block block-control">si &lt;tecla espacio&gt; entonces</div>
+                            <div class="block-nest">
+                                <div class="scratch-block block-variable">dar a velocidad Y el valor 15</div>
+                                <div class="scratch-block block-control">repetir 10 veces</div>
+                                <div class="block-nest">
+                                    <div class="scratch-block block-motion">sumar a y: velocidad Y</div>
+                                    <div class="scratch-block block-variable">sumar a velocidad Y: -1.5</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `,
+                explanation: "Para el movimiento horizontal, simplemente sumamos o restamos valor a la coordenada X. El salto es más complejo: usamos una variable 'velocidad Y' que empieza fuerte (15) y disminuye gradualmente (-1.5) en cada repetición. Esto crea una curva parabólica natural en lugar de un movimiento robótico de arriba-abajo."
+            },
+            2: {
+                title: "Paso 2: Obstáculos y Colisiones",
+                content: `
+                    <div class="space-y-4">
+                        <div>
+                            <h5 class="font-bold text-sm text-stone-700 mb-2">A. El Enemigo</h5>
+                            <div class="scratch-block block-event">al presionar bandera verde 🚩</div>
+                            <div class="block-nest">
+                                <div class="scratch-block block-control">por siempre 🔄</div>
+                                <div class="block-nest">
+                                    <div class="scratch-block block-motion">ir a x: 240 y: -130</div>
+                                    <div class="scratch-block block-motion">deslizar en 2 seg a x: -240 y: -130</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div>
+                            <h5 class="font-bold text-sm text-stone-700 mb-2">B. Game Over</h5>
+                            <div class="scratch-block block-control">si &lt;tocando Obstáculo&gt; entonces</div>
+                            <div class="block-nest">
+                                <div class="scratch-block block-looks">decir "¡Perdí!"</div>
+                                <div class="scratch-block block-control">detener todos</div>
+                            </div>
+                        </div>
+                    </div>
+                `,
+                explanation: "El obstáculo usa un bucle infinito para moverse de derecha (x: 240) a izquierda (x: -240). La colisión se detecta calculando la distancia entre el jugador y el obstáculo. Si se tocan, detenemos el juego."
+            }
+        };
+
+        // --- APP STATE ---
+        let currentStep = 1;
+        let gameActive = true;
+        let score = 0;
+        
+        // --- CHART JS SETUP ---
+        const ctxChart = document.getElementById('physicsChart').getContext('2d');
+        const physicsChart = new Chart(ctxChart, {
+            type: 'line',
+            data: {
+                labels: Array(20).fill(''),
+                datasets: [{
+                    label: 'Posición Y (Altura)',
+                    data: Array(20).fill(0),
+                    borderColor: 'rgb(249, 115, 22)', // Orange-500
+                    backgroundColor: 'rgba(249, 115, 22, 0.1)',
+                    borderWidth: 2,
+                    tension: 0.4,
+                    fill: true,
+                    pointRadius: 0
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                animation: false,
+                plugins: {
+                    legend: { display: false },
+                    tooltip: { enabled: false }
+                },
+                scales: {
+                    y: {
+                        min: 0,
+                        max: 150,
+                        grid: { color: '#f5f5f4' }
+                    },
+                    x: { display: false }
+                }
+            }
+        });
+
+        // --- GAME ENGINE (CANVAS) ---
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        
+        // Game Entities
+        const player = {
+            x: 50,
+            y: 250, // Floor level
+            width: 30,
+            height: 30,
+            color: '#3b82f6', // Blue-500
+            vy: 0,
+            isJumping: false,
+            groundY: 250
+        };
+
+        const obstacle = {
+            x: 600,
+            y: 260,
+            width: 20,
+            height: 20,
+            color: '#ef4444', // Red-500
+            speed: 3
+        };
+
+        // Input Handling
+        const keys = {
+            right: false,
+            left: false,
+            space: false
+        };
+
+        window.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowRight') keys.right = true;
+            if (e.key === 'ArrowLeft') keys.left = true;
+            if (e.key === ' ') {
+                keys.space = true;
+                e.preventDefault();
+                jump();
+            }
+        });
+
+        window.addEventListener('keyup', (e) => {
+            if (e.key === 'ArrowRight') keys.right = false;
+            if (e.key === 'ArrowLeft') keys.left = false;
+            if (e.key === ' ') keys.space = false;
+        });
+
+        function jump() {
+            if (!player.isJumping && gameActive) {
+                // Implementing the logic from Step 1B: Set velocity Y to 15
+                player.vy = -12; // Negative because Canvas Y is inverted (0 is top)
+                player.isJumping = true;
+            }
+        }
+
+        function updateGame() {
+            if (!gameActive) return;
+
+            // 1. Player Movement (Step 1A)
+            if (keys.right && player.x < canvas.width - player.width) player.x += 5;
+            if (keys.left && player.x > 0) player.x -= 5;
+
+            // 2. Physics (Step 1B Logic)
+            player.y += player.vy;
             
-            // Reset button styles
-            document.querySelectorAll('.tab-btn').forEach(btn => {
-                btn.classList.remove('text-purple-600', 'border-b-2', 'border-purple-600', 'bg-white');
-                btn.classList.add('text-gray-500');
-            });
+            // Gravity Logic: "Sumar a velocidad Y -1.5"
+            // In Canvas, down is positive, so we add gravity
+            if (player.y < player.groundY) {
+                player.vy += 0.6; // Gravity simulation
+            } else {
+                player.y = player.groundY;
+                player.vy = 0;
+                player.isJumping = false;
+            }
 
-            // Show selected content
-            document.getElementById('content-' + tabId).classList.remove('hidden');
-            document.getElementById('content-' + tabId).classList.add('block');
+            // 3. Obstacle Logic (Step 2A)
+            obstacle.x -= obstacle.speed;
+            if (obstacle.x < -20) {
+                obstacle.x = canvas.width + Math.random() * 200;
+                score++;
+                if(obstacle.speed < 8) obstacle.speed += 0.2; // Difficulty ramp
+                document.getElementById('score-display').textContent = `Puntos: ${score}`;
+            }
 
-            // Highlight selected button
-            const activeBtn = document.querySelector(`button[onclick="switchTab('${tabId}')"]`);
-            activeBtn.classList.remove('text-gray-500');
-            activeBtn.classList.add('text-purple-600', 'border-b-2', 'border-purple-600', 'bg-white');
+            // 4. Collision Detection (Step 2B)
+            if (
+                player.x < obstacle.x + obstacle.width &&
+                player.x + player.width > obstacle.x &&
+                player.y < obstacle.y + obstacle.height &&
+                player.y + player.height > obstacle.y
+            ) {
+                gameOver();
+            }
+
+            // 5. Update Chart Data
+            // We want to visualize height relative to ground (0 to 150)
+            const height = player.groundY - player.y;
+            const data = physicsChart.data.datasets[0].data;
+            data.shift();
+            data.push(height);
+            physicsChart.update();
+        }
+
+        function drawGame() {
+            // Clear
+            ctx.fillStyle = '#1c1917'; // Stone-900
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // Ground
+            ctx.strokeStyle = '#a8a29e';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(0, player.groundY + player.height);
+            ctx.lineTo(canvas.width, player.groundY + player.height);
+            ctx.stroke();
+
+            // Player (Cat representation)
+            ctx.fillStyle = player.color;
+            ctx.fillRect(player.x, player.y, player.width, player.height);
+            // Simple eyes
+            ctx.fillStyle = 'white';
+            ctx.fillRect(player.x + 20, player.y + 5, 5, 5); // Right Eye
+            if (keys.left) { // Look left
+                ctx.clearRect(player.x + 20, player.y + 5, 5, 5);
+                ctx.fillRect(player.x + 5, player.y + 5, 5, 5); 
+            }
+
+            // Obstacle
+            ctx.fillStyle = obstacle.color;
+            ctx.beginPath();
+            // Drawing a triangle/rock shape
+            ctx.moveTo(obstacle.x, obstacle.y + obstacle.height);
+            ctx.lineTo(obstacle.x + obstacle.width / 2, obstacle.y);
+            ctx.lineTo(obstacle.x + obstacle.width, obstacle.y + obstacle.height);
+            ctx.fill();
+
+            // Game Over Overlay
+            if (!gameActive) {
+                ctx.fillStyle = 'rgba(0,0,0,0.7)';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                ctx.fillStyle = 'white';
+                ctx.font = '30px Inter';
+                ctx.textAlign = 'center';
+                ctx.fillText('¡JUEGO TERMINADO!', canvas.width / 2, canvas.height / 2);
+                ctx.font = '16px Inter';
+                ctx.fillText('Pulsa Reiniciar', canvas.width / 2, canvas.height / 2 + 30);
+            }
+        }
+
+        function gameLoop() {
+            updateGame();
+            drawGame();
+            requestAnimationFrame(gameLoop);
+        }
+
+        function gameOver() {
+            gameActive = false;
+        }
+
+        function resetGame() {
+            gameActive = true;
+            player.x = 50;
+            player.y = player.groundY;
+            player.vy = 0;
+            obstacle.x = 600;
+            obstacle.speed = 3;
+            score = 0;
+            document.getElementById('score-display').textContent = `Puntos: 0`;
+            
+            // Clear chart
+            physicsChart.data.datasets[0].data = Array(20).fill(0);
+            physicsChart.update();
+        }
+
+        // --- UI LOGIC ---
+        function setStep(step) {
+            currentStep = step;
+            
+            // Update Buttons
+            document.getElementById('btn-step-1').className = step === 1 
+                ? "px-4 py-2 rounded-full text-sm font-semibold bg-orange-500 text-white shadow-md transition-all whitespace-nowrap"
+                : "px-4 py-2 rounded-full text-sm font-semibold bg-stone-200 text-stone-600 hover:bg-stone-300 transition-all whitespace-nowrap";
+            
+            document.getElementById('btn-step-2').className = step === 2 
+                ? "px-4 py-2 rounded-full text-sm font-semibold bg-orange-500 text-white shadow-md transition-all whitespace-nowrap"
+                : "px-4 py-2 rounded-full text-sm font-semibold bg-stone-200 text-stone-600 hover:bg-stone-300 transition-all whitespace-nowrap";
+
+            // Update Content with Fade effect
+            const contentDiv = document.getElementById('instruction-content');
+            const explanationDiv = document.getElementById('logic-explanation');
+            
+            contentDiv.innerHTML = tutorialData[step].content;
+            explanationDiv.textContent = tutorialData[step].explanation;
         }
 
         function scrollToSection(id) {
             document.getElementById(id).scrollIntoView({ behavior: 'smooth' });
         }
 
-        // --- 2. Game Simulation Logic (The Core Interaction) ---
-        const canvas = document.getElementById('gameCanvas');
-        const ctx = canvas.getContext('2d');
-        const scoreDisplay = document.getElementById('scoreDisplay');
-        const speedDisplay = document.getElementById('speedDisplay');
-        const toggleBtn = document.getElementById('toggleGameBtn');
-
-        // Game State
-        let gameState = {
-            isPlaying: false,
-            score: 0,
-            velocity: -5, // Start speed as per guide
-            catcherX: 200,
-            catcherY: 270,
-            catcherWidth: 40,
-            catcherHeight: 20,
-            foods: [],
-            lastTime: 0,
-            spawnTimer: 0,
-            historyScore: [],
-            historySpeed: []
+        // --- INIT ---
+        window.onload = function() {
+            setStep(1);
+            gameLoop();
         };
 
-        // Food Object Class
-        class Food {
-            constructor() {
-                this.reset();
-                this.delay = Math.random() * 2000; // Random start delay
-            }
-
-            reset() {
-                this.x = Math.random() * (canvas.width - 20) + 10;
-                this.y = -20; // Start above screen
-                this.active = false;
-                this.delay = Math.random() * 2000 + 500; // Wait 0.5-2.5s before showing
-                this.color = ['#F6E05E', '#F56565', '#ED8936', '#48BB78'][Math.floor(Math.random()*4)];
-                this.symbol = ['🍩', '🍎', '🍌', '🍰'][Math.floor(Math.random()*4)];
-            }
-
-            update(dt) {
-                if (this.delay > 0) {
-                    this.delay -= dt;
-                    return;
-                }
-                
-                this.active = true;
-                // Move down by velocity (inverted because canvas Y goes down)
-                // Guide says velocity is negative (-5), so we subtract it to go down?
-                // Actually in Scratch Y goes UP. In Canvas Y goes DOWN.
-                // So velocity -5 in Scratch means DOWN. In Canvas we ADD positive 5.
-                // To keep visualization true to guide numbers, we'll store negative but apply abs.
-                this.y += Math.abs(gameState.velocity) * (dt / 16); 
-
-                // Check collision with catcher
-                if (
-                    this.x > gameState.catcherX - 20 &&
-                    this.x < gameState.catcherX + gameState.catcherWidth + 20 &&
-                    this.y > gameState.catcherY &&
-                    this.y < gameState.catcherY + gameState.catcherHeight
-                ) {
-                    // CAUGHT!
-                    gameState.score += 10;
-                    gameState.velocity -= 0.5; // Make it faster (more negative)
-                    updateCharts();
-                    this.reset();
-                }
-
-                // Check collision with bottom border
-                if (this.y > canvas.height) {
-                    this.reset();
-                }
-            }
-
-            draw(ctx) {
-                if (!this.active) return;
-                ctx.font = "20px Arial";
-                ctx.fillText(this.symbol, this.x, this.y);
-            }
-        }
-
-        // Initialize Foods
-        for(let i=0; i<3; i++) { // Start with 3 items for demo
-            gameState.foods.push(new Food());
-        }
-
-        // Input Handling
-        let keys = {};
-        window.addEventListener('keydown', e => keys[e.key] = true);
-        window.addEventListener('keyup', e => keys[e.key] = false);
-
-        // Touch handling for mobile
-        canvas.addEventListener('touchstart', handleTouch, false);
-        canvas.addEventListener('touchmove', handleTouch, false);
-
-        function handleTouch(e) {
-            e.preventDefault();
-            const rect = canvas.getBoundingClientRect();
-            const touch = e.touches[0];
-            const touchX = touch.clientX - rect.left;
-            
-            // Map touch X to catcher position
-            // Keep catcher within bounds
-            gameState.catcherX = Math.max(0, Math.min(canvas.width - gameState.catcherWidth, touchX - gameState.catcherWidth/2));
-        }
-
-        // --- 3. Visualization (Chart.js) ---
-        // Visualization & Content Choices:
-        // Goal: Inform & Change. Show how the game gets harder (Speed) and rewarding (Score).
-        // Viz: Line Charts. 
-        // Justification: Line charts are best for showing trends over time/events.
-        // Interaction: Charts update automatically as the game is played.
-        
-        let scoreChartCtx = document.getElementById('scoreChart').getContext('2d');
-        let speedChartCtx = document.getElementById('speedChart').getContext('2d');
-
-        let scoreChart = new Chart(scoreChartCtx, {
-            type: 'line',
-            data: {
-                labels: ['Start'],
-                datasets: [{
-                    label: 'Puntos Totales',
-                    data: [0],
-                    borderColor: '#805AD5',
-                    backgroundColor: 'rgba(128, 90, 213, 0.1)',
-                    fill: true,
-                    tension: 0.3
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: { legend: { display: false } },
-                scales: { y: { beginAtZero: true } }
-            }
-        });
-
-        let speedChart = new Chart(speedChartCtx, {
-            type: 'line',
-            data: {
-                labels: ['Start'],
-                datasets: [{
-                    label: 'Velocidad (Valor Absoluto)',
-                    data: [5],
-                    borderColor: '#F56565',
-                    backgroundColor: 'rgba(245, 101, 101, 0.1)',
-                    fill: true,
-                    tension: 0.1
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: { legend: { display: false } },
-                scales: { y: { beginAtZero: false } }
-            }
-        });
-
-        function updateCharts() {
-            const label = gameState.score / 10; // Simple step counter
-            
-            scoreChart.data.labels.push(label);
-            scoreChart.data.datasets[0].data.push(gameState.score);
-            if(scoreChart.data.labels.length > 10) {
-                scoreChart.data.labels.shift();
-                scoreChart.data.datasets[0].data.shift();
-            }
-            scoreChart.update();
-
-            speedChart.data.labels.push(label);
-            speedChart.data.datasets[0].data.push(Math.abs(gameState.velocity));
-             if(speedChart.data.labels.length > 10) {
-                speedChart.data.labels.shift();
-                speedChart.data.datasets[0].data.shift();
-            }
-            speedChart.update();
-        }
-
-        // --- Game Loop ---
-        function loop(timestamp) {
-            if (!gameState.isPlaying) return;
-            const dt = timestamp - gameState.lastTime;
-            gameState.lastTime = timestamp;
-
-            // Clear
-            ctx.fillStyle = '#EDF2F7';
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-            // Move Catcher
-            if (keys['ArrowRight']) gameState.catcherX += 5;
-            if (keys['ArrowLeft']) gameState.catcherX -= 5;
-            
-            // Clamp Catcher
-            if (gameState.catcherX < 0) gameState.catcherX = 0;
-            if (gameState.catcherX > canvas.width - gameState.catcherWidth) gameState.catcherX = canvas.width - gameState.catcherWidth;
-
-            // Draw Catcher
-            ctx.font = "30px Arial";
-            ctx.fillText("👸", gameState.catcherX, gameState.catcherY + 20);
-
-            // Update & Draw Foods
-            gameState.foods.forEach(food => {
-                food.update(dt);
-                food.draw(ctx);
-            });
-
-            // Update UI Stats
-            scoreDisplay.innerText = gameState.score;
-            speedDisplay.innerText = gameState.velocity.toFixed(1);
-
-            requestAnimationFrame(loop);
-        }
-
-        toggleBtn.addEventListener('click', () => {
-            if (gameState.isPlaying) {
-                gameState.isPlaying = false;
-                toggleBtn.innerText = "Reanudar Simulación";
-                toggleBtn.classList.replace('bg-red-600', 'bg-purple-600');
-                toggleBtn.classList.replace('hover:bg-red-700', 'hover:bg-purple-700');
-            } else {
-                gameState.isPlaying = true;
-                gameState.lastTime = performance.now();
-                requestAnimationFrame(loop);
-                toggleBtn.innerText = "Pausar Simulación";
-                toggleBtn.classList.replace('bg-purple-600', 'bg-red-600');
-                toggleBtn.classList.replace('hover:bg-purple-700', 'hover:bg-red-700');
-            }
-        });
-
-        // Initial Draw
-        ctx.fillStyle = '#EDF2F7';
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-        ctx.font = "30px Arial";
-        ctx.fillText("👸", gameState.catcherX, gameState.catcherY + 20);
-        ctx.font = "14px Arial";
-        ctx.fillStyle = "#A0AEC0";
-        ctx.fillText("Pulsa 'Iniciar' para jugar", 110, 150);
-
     </script>
-    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
 </body>
 </html>
