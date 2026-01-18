@@ -1,0 +1,542 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Guía Interactiva: Lógica del Juego Memory en Scratch</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <!-- Placeholder Comments -->
+    <!-- Chosen Palette: Warm Neutrals & Scratch Block Colors. Background: #FFFAF0 (FloralWhite/Warm Cream). Text: Slate-800. Accents: Scratch variable orange (#FF8C1A), Control gold (#FFAB19), Events yellow (#FFD940). -->
+    <!-- Application Structure Plan: A 'Logic Lab' approach. Top section is an interactive simulation of the game engine described in the PDF. Users click cards to see variables change in real-time (The 'What'). Following sections break down the code into semantic 'Scratch Block' components (The 'How'). The structure prioritizes understanding the invisible logic (variables) before showing the code. -->
+    <!-- Visualization & Content Choices: 
+        1. 'Variable Monitor Dashboard' (DOM Updates): Direct representation of Scratch variables. Goal: Inform.
+        2. 'Click Cycle Chart' (Chart.js): A line chart tracking the 'clic' variable over time. Goal: Change/Track. Justification: Visualizes the 'Reset on 3' logic dynamically.
+        3. 'CSS Scratch Blocks': Styled HTML divs. Goal: Organize. Justification: Better accessibility and readability than screenshots of code.
+        4. 'Interactive Cards': Buttons that simulate the game sprites. Goal: Engage.
+    -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+
+    <style>
+        /* Custom Scratch-like styling */
+        .scratch-block {
+            display: inline-block;
+            padding: 8px 12px;
+            margin: 4px 0;
+            border-radius: 8px;
+            color: white;
+            font-family: system-ui, -apple-system, sans-serif;
+            font-weight: 600;
+            font-size: 0.9rem;
+            box-shadow: 0 2px 0 rgba(0,0,0,0.2);
+            cursor: default;
+        }
+        .sb-event { background-color: #FFBF00; border: 1px solid #CC9900; }
+        .sb-control { background-color: #FFAB19; border: 1px solid #CF8B17; }
+        .sb-variable { background-color: #FF8C1A; border: 1px solid #DB6E00; }
+        .sb-motion { background-color: #4C97FF; border: 1px solid #3373CC; }
+        .sb-looks { background-color: #9966FF; border: 1px solid #774DCB; }
+        .sb-operators { background-color: #59C059; border: 1px solid #389438; }
+        
+        /* Nesting for blocks */
+        .block-container {
+            border-left: 12px solid #FFAB19; /* Control color default */
+            padding-left: 12px;
+            margin-top: -4px;
+            margin-bottom: 4px;
+            border-top-left-radius: 4px;
+            border-bottom-left-radius: 4px;
+        }
+
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 300px;
+            max-height: 400px;
+        }
+
+        .card-face {
+            backface-visibility: hidden;
+            transition: transform 0.6s;
+        }
+        .perspective-1000 {
+            perspective: 1000px;
+        }
+        
+        .card-inner {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            text-align: center;
+            transition: transform 0.6s;
+            transform-style: preserve-3d;
+        }
+        
+        .flipped .card-inner {
+            transform: rotateY(180deg);
+        }
+        
+        .card-front, .card-back {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            -webkit-backface-visibility: hidden;
+            backface-visibility: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+        
+        .card-front {
+            background-color: #4C97FF; /* Scratch Blue */
+            color: white;
+            font-size: 2rem;
+        }
+        
+        .card-back {
+            background-color: white;
+            transform: rotateY(180deg);
+            border: 2px solid #4C97FF;
+        }
+
+        /* Logic Pulse Animation */
+        @keyframes pulse-orange {
+            0% { box-shadow: 0 0 0 0 rgba(255, 140, 26, 0.7); }
+            70% { box-shadow: 0 0 0 10px rgba(255, 140, 26, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(255, 140, 26, 0); }
+        }
+        .update-flash {
+            animation: pulse-orange 1s;
+        }
+    </style>
+</head>
+<body class="bg-orange-50 text-slate-800 font-sans leading-relaxed">
+
+    <!-- Header -->
+    <header class="bg-white shadow-sm border-b-4 border-orange-400 sticky top-0 z-50">
+        <div class="max-w-6xl mx-auto px-4 py-4 flex justify-between items-center">
+            <div class="flex items-center space-x-3">
+                <span class="text-3xl">🧩</span>
+                <div>
+                    <h1 class="text-2xl font-bold text-slate-900">Lab de Lógica: Memory Scratch</h1>
+                    <p class="text-xs text-slate-500 font-medium">Basado en la Guía de Mujeres Inventoras</p>
+                </div>
+            </div>
+            <nav class="hidden md:flex space-x-6">
+                <a href="#simulator" class="hover:text-orange-500 font-medium transition-colors">Simulador</a>
+                <a href="#variables" class="hover:text-orange-500 font-medium transition-colors">Variables</a>
+                <a href="#code-guide" class="hover:text-orange-500 font-medium transition-colors">Bloques de Código</a>
+            </nav>
+        </div>
+    </header>
+
+    <main class="max-w-6xl mx-auto px-4 py-8 space-y-12">
+
+        <!-- Intro Section -->
+        <section class="max-w-3xl mx-auto text-center space-y-4">
+            <h2 class="text-3xl font-bold text-slate-800">Entendiendo el Motor del Juego</h2>
+            <p class="text-lg text-slate-600">
+                Esta guía interactiva te ayudará a visualizar la lógica oculta detrás del juego de Memory. 
+                El documento original explica cómo usar variables para controlar turnos y emparejamientos. 
+                Aquí abajo puedes <strong>probar el algoritmo en vivo</strong> antes de programarlo.
+            </p>
+        </section>
+
+        <!-- Interactive Simulator Section -->
+        <section id="simulator" class="bg-white rounded-2xl shadow-xl overflow-hidden border border-slate-200">
+            <div class="bg-slate-900 px-6 py-4 flex justify-between items-center">
+                <h3 class="text-white font-bold text-xl flex items-center gap-2">
+                    <span>🎮</span> Laboratorio de Variables
+                </h3>
+                <span class="text-xs bg-slate-700 text-slate-300 px-2 py-1 rounded">Estado: En vivo</span>
+            </div>
+            
+            <div class="p-6 grid grid-cols-1 lg:grid-cols-12 gap-8">
+                
+                <!-- Left: The Game Area (Cards) -->
+                <div class="lg:col-span-5 space-y-6">
+                    <p class="text-sm text-slate-500 mb-2">Haz clic en las tarjetas para simular el juego:</p>
+                    <div class="flex justify-center gap-6 perspective-1000 h-48">
+                        <!-- Card 1: Hedy -->
+                        <div id="card-person" class="w-32 h-40 cursor-pointer group" onclick="handleCardClick('person')">
+                            <div class="card-inner w-full h-full relative" id="inner-person">
+                                <div class="card-front bg-purple-600 rounded-lg flex flex-col items-center justify-center">
+                                    <span class="text-4xl mb-2">👩‍🔬</span>
+                                    <span class="text-xs font-bold uppercase tracking-widest opacity-80">Reverso</span>
+                                </div>
+                                <div class="card-back bg-white border-2 border-purple-600 rounded-lg flex flex-col items-center justify-center p-2">
+                                    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/e/e4/Hedy_Lamarr_in_The_Heavenly_Body_1944.jpg/440px-Hedy_Lamarr_in_The_Heavenly_Body_1944.jpg" alt="Hedy Lamarr" class="w-16 h-16 object-cover rounded-full mb-2 shadow-sm">
+                                    <span class="text-xs font-bold text-purple-900">Hedy Lamarr</span>
+                                    <span class="text-[10px] bg-orange-100 text-orange-800 px-1 rounded mt-1">ID: 1</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Card 2: Wifi -->
+                        <div id="card-invention" class="w-32 h-40 cursor-pointer group" onclick="handleCardClick('invention')">
+                            <div class="card-inner w-full h-full relative" id="inner-invention">
+                                <div class="card-front bg-blue-500 rounded-lg flex flex-col items-center justify-center">
+                                    <span class="text-4xl mb-2">📡</span>
+                                    <span class="text-xs font-bold uppercase tracking-widest opacity-80">Reverso</span>
+                                </div>
+                                <div class="card-back bg-white border-2 border-blue-500 rounded-lg flex flex-col items-center justify-center p-2">
+                                    <span class="text-3xl mb-2">📶</span>
+                                    <span class="text-xs font-bold text-blue-900">Wi-Fi</span>
+                                    <span class="text-[10px] bg-orange-100 text-orange-800 px-1 rounded mt-1">ID: 1</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="status-message" class="bg-blue-50 text-blue-800 p-3 rounded-lg text-sm text-center font-medium opacity-0 transition-opacity duration-300">
+                        Esperando interacción...
+                    </div>
+                </div>
+
+                <!-- Middle: Variable Monitors (Scratch Style) -->
+                <div class="lg:col-span-3 flex flex-col justify-center space-y-4 bg-slate-50 p-4 rounded-xl border border-slate-200" id="variables">
+                    <h4 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Variables de Scratch</h4>
+                    
+                    <!-- Monitor: Clic -->
+                    <div class="flex items-center justify-between bg-orange-100 p-2 rounded border border-orange-300 transition-all" id="monitor-clic-box">
+                        <span class="text-sm font-bold text-orange-800 mr-2">clic</span>
+                        <span id="val-clic" class="bg-white px-3 py-1 rounded text-orange-600 font-mono font-bold shadow-sm min-w-[30px] text-center">0</span>
+                    </div>
+
+                    <!-- Monitor: Persona -->
+                    <div class="flex items-center justify-between bg-orange-100 p-2 rounded border border-orange-300 transition-all" id="monitor-persona-box">
+                        <span class="text-sm font-bold text-orange-800 mr-2">persona</span>
+                        <span id="val-persona" class="bg-white px-3 py-1 rounded text-orange-600 font-mono font-bold shadow-sm min-w-[30px] text-center">99</span>
+                    </div>
+
+                    <!-- Monitor: Invento -->
+                    <div class="flex items-center justify-between bg-orange-100 p-2 rounded border border-orange-300 transition-all" id="monitor-invento-box">
+                        <span class="text-sm font-bold text-orange-800 mr-2">invento</span>
+                        <span id="val-invento" class="bg-white px-3 py-1 rounded text-orange-600 font-mono font-bold shadow-sm min-w-[30px] text-center">88</span>
+                    </div>
+
+                    <button onclick="resetGame()" class="mt-4 text-xs text-slate-500 hover:text-slate-800 underline">Reiniciar Simulación</button>
+                </div>
+
+                <!-- Right: Chart Container -->
+                <div class="lg:col-span-4 flex flex-col items-center justify-center">
+                    <h4 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2 text-center">Historial de Clics (El Ciclo de 3)</h4>
+                    <div class="chart-container bg-white p-2 rounded-lg border border-slate-100 shadow-sm">
+                        <canvas id="clicChart"></canvas>
+                    </div>
+                    <p class="text-[10px] text-slate-400 mt-2 text-center w-3/4">
+                        El gráfico muestra cómo la variable "clic" sube hasta 2. Al llegar a 3, el sistema se reinicia automáticamente.
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Step by Step Guide -->
+        <section id="code-guide" class="space-y-8">
+            <div class="border-l-4 border-purple-500 pl-4">
+                <h2 class="text-2xl font-bold text-slate-900">Construcción del Código Paso a Paso</h2>
+                <p class="text-slate-600">Utiliza estos esquemas para montar tus bloques en Scratch. Recuerda que los colores indican la categoría del bloque.</p>
+            </div>
+
+            <div class="grid md:grid-cols-2 gap-8">
+                
+                <!-- Step 1: Initialization -->
+                <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
+                    <div class="flex items-center mb-4">
+                        <div class="w-8 h-8 rounded-full bg-yellow-400 flex items-center justify-center text-white font-bold mr-3">1</div>
+                        <h3 class="font-bold text-lg">Inicializar (Bandera Verde)</h3>
+                    </div>
+                    <p class="text-sm text-slate-600 mb-4">Es crucial dar valores iniciales "vacíos" (99 o 88) para evitar falsos positivos al empezar.</p>
+                    
+                    <div class="bg-slate-50 p-4 rounded-lg overflow-x-auto">
+                        <div class="scratch-block sb-event">al hacer clic en 🏳️</div><br>
+                        <div class="scratch-block sb-looks">mostrar</div><br>
+                        <div class="scratch-block sb-variable">dar a [clic v] el valor (0)</div><br>
+                        <div class="scratch-block sb-variable">dar a [persona v] el valor (99)</div><br>
+                        <div class="scratch-block sb-variable">dar a [invento v] el valor (88)</div><br>
+                        <div class="scratch-block sb-looks">cambiar disfraz a [Hedy v]</div><br>
+                        <div class="scratch-block sb-control">esperar (2) segundos</div><br>
+                        <div class="scratch-block sb-looks">cambiar disfraz a [Reverso v]</div>
+                    </div>
+                </div>
+
+                <!-- Step 2: The Logic Loop -->
+                <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
+                    <div class="flex items-center mb-4">
+                        <div class="w-8 h-8 rounded-full bg-orange-400 flex items-center justify-center text-white font-bold mr-3">2</div>
+                        <h3 class="font-bold text-lg">El Bucle de Control (3 Clics)</h3>
+                    </div>
+                    <p class="text-sm text-slate-600 mb-4">Este código vigila constantemente si el jugador ha hecho 3 clics (ha fallado o quiere intentar de nuevo).</p>
+                    
+                    <div class="bg-slate-50 p-4 rounded-lg overflow-x-auto">
+                        <div class="scratch-block sb-control">por siempre</div><br>
+                        <div class="block-container" style="border-color: #FFAB19;">
+                            <div class="scratch-block sb-control">si &lt; <span class="sb-variable mx-1 px-1 text-xs">[clic]</span> = (3) &gt; entonces</div><br>
+                            <div class="block-container" style="border-color: #FFAB19;">
+                                <div class="scratch-block sb-event">enviar [mensaje1 v]</div><br>
+                                <div class="scratch-block sb-variable">dar a [clic v] el valor (0)</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Step 3: Card Interaction -->
+                <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200 md:col-span-2">
+                    <div class="flex items-center mb-4">
+                        <div class="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center text-white font-bold mr-3">3</div>
+                        <h3 class="font-bold text-lg">Interacción y Validación (Al hacer clic)</h3>
+                    </div>
+                    <p class="text-sm text-slate-600 mb-4">Aquí ocurre la magia. Al hacer clic, mostramos la carta y comprobamos si tenemos una pareja (ID 1 + ID 1).</p>
+                    
+                    <div class="grid md:grid-cols-2 gap-6">
+                        <div class="bg-slate-50 p-4 rounded-lg overflow-x-auto">
+                            <h4 class="font-bold text-xs text-purple-600 mb-2 uppercase">Para Objeto "Persona"</h4>
+                            <div class="scratch-block sb-event">al hacer clic en este objeto</div><br>
+                            <div class="scratch-block sb-variable">sumar a [clic v] (1)</div><br>
+                            <div class="scratch-block sb-control">si &lt; <span class="sb-variable mx-1 px-1 text-xs">[clic]</span> &lt; (3) &gt; entonces</div><br>
+                            <div class="block-container" style="border-color: #FFAB19;">
+                                <div class="scratch-block sb-looks">cambiar disfraz a [Hedy v]</div><br>
+                                <div class="scratch-block sb-variable">dar a [persona v] el valor (1)</div><br>
+                                <div class="scratch-block sb-control">si &lt; <span class="sb-operators mx-1 px-1 text-xs">&lt; [invento] = (1) &gt; y &lt; [persona] = (1) &gt;</span> &gt; entonces</div><br>
+                                <div class="block-container" style="border-color: #FFAB19;">
+                                    <div class="scratch-block sb-looks">esconder</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="bg-slate-50 p-4 rounded-lg overflow-x-auto">
+                            <h4 class="font-bold text-xs text-blue-600 mb-2 uppercase">Para Objeto "Invento"</h4>
+                            <div class="scratch-block sb-event">al hacer clic en este objeto</div><br>
+                            <div class="scratch-block sb-variable">sumar a [clic v] (1)</div><br>
+                            <div class="scratch-block sb-control">si &lt; <span class="sb-variable mx-1 px-1 text-xs">[clic]</span> &lt; (3) &gt; entonces</div><br>
+                            <div class="block-container" style="border-color: #FFAB19;">
+                                <div class="scratch-block sb-looks">cambiar disfraz a [Wifi v]</div><br>
+                                <div class="scratch-block sb-variable">dar a [invento v] el valor (1)</div><br>
+                                <div class="scratch-block sb-control">si &lt; <span class="sb-operators mx-1 px-1 text-xs">&lt; [invento] = (1) &gt; y &lt; [persona] = (1) &gt;</span> &gt; entonces</div><br>
+                                <div class="block-container" style="border-color: #FFAB19;">
+                                    <div class="scratch-block sb-looks">esconder</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Summary & Tips -->
+        <section class="bg-orange-100 rounded-2xl p-8 border border-orange-200">
+            <h3 class="text-xl font-bold text-orange-900 mb-4">💡 Trucos para expandir el juego</h3>
+            <ul class="space-y-3">
+                <li class="flex items-start">
+                    <span class="text-orange-500 mr-2">➜</span>
+                    <p class="text-orange-800"><strong>Parejas Nuevas:</strong> Para añadir más parejas, simplemente duplica los objetos y cambia los números. Ejemplo: ID 2 para Ada Lovelace y su invento.</p>
+                </li>
+                <li class="flex items-start">
+                    <span class="text-orange-500 mr-2">➜</span>
+                    <p class="text-orange-800"><strong>El Mensaje 1:</strong> Es el encargado de "limpiar". Asegúrate de que todos los objetos tengan un bloque <code>al recibir [mensaje1]</code> que los vuelva a poner boca abajo.</p>
+                </li>
+            </ul>
+        </section>
+
+    </main>
+
+    <footer class="bg-slate-900 text-slate-400 py-8 text-center mt-12">
+        <p class="text-sm">Generado a partir de la guía "Memory en Scratch" - Robótica 11F</p>
+    </footer>
+
+    <!-- JavaScript Logic -->
+    <script>
+        // --- State Management ---
+        const gameState = {
+            clic: 0,
+            persona: 99,
+            invento: 88,
+            history: [0], // Initial history for chart
+            labels: ['Inicio']
+        };
+
+        // --- Chart.js Initialization ---
+        let clicChart;
+        
+        function initChart() {
+            const ctx = document.getElementById('clicChart').getContext('2d');
+            clicChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: gameState.labels,
+                    datasets: [{
+                        label: 'Valor variable "clic"',
+                        data: gameState.history,
+                        borderColor: '#FF8C1A', // Scratch Orange
+                        backgroundColor: 'rgba(255, 140, 26, 0.1)',
+                        borderWidth: 2,
+                        tension: 0.1,
+                        pointBackgroundColor: '#FFAB19',
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 3.5, // Just above 3 to show the limit clearly
+                            ticks: { stepSize: 1 }
+                        }
+                    },
+                    plugins: {
+                        legend: { display: false }
+                    },
+                    animation: {
+                        duration: 800
+                    }
+                }
+            });
+        }
+
+        // --- Core Logic ---
+
+        function updateUI() {
+            // Update Monitors
+            document.getElementById('val-clic').innerText = gameState.clic;
+            document.getElementById('val-persona').innerText = gameState.persona;
+            document.getElementById('val-invento').innerText = gameState.invento;
+            
+            // Highlight changes
+            flashMonitor('monitor-clic-box');
+            
+            // Update Chart
+            updateChart();
+        }
+
+        function flashMonitor(id) {
+            const el = document.getElementById(id);
+            el.classList.remove('update-flash');
+            void el.offsetWidth; // Trigger reflow
+            el.classList.add('update-flash');
+        }
+
+        function updateChart() {
+            clicChart.data.labels = gameState.labels;
+            clicChart.data.datasets[0].data = gameState.history;
+            clicChart.update();
+        }
+
+        function showMessage(msg, type = 'info') {
+            const el = document.getElementById('status-message');
+            el.innerText = msg;
+            el.className = `p-3 rounded-lg text-sm text-center font-medium transition-opacity duration-300 ${type === 'success' ? 'bg-green-100 text-green-800' : 'bg-blue-50 text-blue-800'}`;
+            el.style.opacity = '1';
+        }
+
+        // --- Simulation Logic (Mimicking Scratch) ---
+
+        function handleCardClick(type) {
+            // 1. Logic: Sumar a clic 1
+            gameState.clic += 1;
+            
+            // Add to chart history
+            const timestamp = new Date().toLocaleTimeString([], { second: '2-digit' });
+            gameState.labels.push(`Click ${gameState.history.length}`);
+            gameState.history.push(gameState.clic);
+
+            updateUI();
+
+            // 2. Logic: Si clic < 3
+            if (gameState.clic < 3) {
+                // Flip card visually
+                const inner = document.getElementById(`inner-${type}`);
+                inner.parentElement.classList.add('flipped');
+                
+                // Assign variable logic
+                if (type === 'person') {
+                    gameState.persona = 1; // ID 1
+                    document.getElementById('val-persona').innerText = 1;
+                    flashMonitor('monitor-persona-box');
+                    showMessage("Variable 'persona' ahora vale 1");
+                } else {
+                    gameState.invento = 1; // ID 1
+                    document.getElementById('val-invento').innerText = 1;
+                    flashMonitor('monitor-invento-box');
+                    showMessage("Variable 'invento' ahora vale 1");
+                }
+
+                // 3. Logic: Check Match (Si invento = 1 Y persona = 1)
+                checkMatch();
+
+            } else {
+                // 4. Logic: Clic = 3 -> Reset (Enviar mensaje1)
+                showMessage("¡Tercer clic! Enviando 'mensaje1' para reiniciar...", "info");
+                
+                // Wait briefly then reset logic
+                setTimeout(() => {
+                    resetTurnLogic();
+                }, 1000);
+            }
+        }
+
+        function checkMatch() {
+            if (gameState.persona === 1 && gameState.invento === 1) {
+                setTimeout(() => {
+                    showMessage("¡PAREJA ENCONTRADA! (persona=1 y invento=1)", "success");
+                    // In real scratch, they would hide. Here we highlight them.
+                    document.getElementById('inner-person').querySelector('.card-back').classList.add('bg-green-100');
+                    document.getElementById('inner-invention').querySelector('.card-back').classList.add('bg-green-100');
+                }, 500);
+            }
+        }
+
+        function resetTurnLogic() {
+            // Logic: dar a clic el valor 0
+            gameState.clic = 0;
+            gameState.persona = 99;
+            gameState.invento = 88;
+            
+            // Update Chart for reset
+            gameState.labels.push('Reset');
+            gameState.history.push(0);
+            
+            // Reset UI Visuals
+            document.getElementById('card-person').classList.remove('flipped');
+            document.getElementById('card-invention').classList.remove('flipped');
+            
+            // Remove success highlights
+            document.getElementById('inner-person').querySelector('.card-back').classList.remove('bg-green-100');
+            document.getElementById('inner-invention').querySelector('.card-back').classList.remove('bg-green-100');
+
+            updateUI();
+            showMessage("Variables reiniciadas. Inténtalo de nuevo.");
+        }
+
+        function resetGame() {
+            gameState.clic = 0;
+            gameState.persona = 99;
+            gameState.invento = 88;
+            gameState.history = [0];
+            gameState.labels = ['Inicio'];
+            
+            document.getElementById('card-person').classList.remove('flipped');
+            document.getElementById('card-invention').classList.remove('flipped');
+            
+            initChart(); // Re-init to clear canvas state cleanly
+            updateUI();
+            showMessage("Simulación reiniciada por completo.");
+        }
+
+        // Initialize on load
+        window.onload = function() {
+            initChart();
+        };
+
+    </script>
+</body>
+</html>
