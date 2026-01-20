@@ -3,7 +3,484 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Guía Interactiva: Simulador de Fútbol en Scratch</title>
+    <title>Guía Interactiva: Simulador de Fútb<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simulador de Lógica: Inventario RPG en Scratch</title>
+    <script src="/CYR/assets/tailwind.global.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Nunito', sans-serif;
+            background-color: #f8fafc;
+            color: #334155;
+        }
+        
+        /* Scratch Block Imitation Styles */
+        .scratch-block {
+            padding: 8px 12px;
+            border-radius: 4px;
+            color: white;
+            font-weight: bold;
+            display: inline-block;
+            margin: 2px 0;
+            box-shadow: 0 2px 0 rgba(0,0,0,0.2);
+            font-size: 0.9rem;
+            cursor: default;
+        }
+        .block-event { background-color: #FFBF00; border: 1px solid #E6AC00; }
+        .block-control { background-color: #FFAB19; border: 1px solid #CF8B17; }
+        .block-sensing { background-color: #5CB1D6; border: 1px solid #2E8EB8; }
+        .block-list { background-color: #FF661A; border: 1px solid #D94D0C; }
+        .block-var { background-color: #FF8C1A; border: 1px solid #DB6E00; }
+        .block-looks { background-color: #9966FF; border: 1px solid #774DCB; }
+        .block-operator { background-color: #59C059; border: 1px solid #389438; }
+
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 300px; 
+            margin-left: auto;
+            margin-right: auto;
+            height: 250px;
+            max-height: 250px;
+        }
+
+        /* Custom Scrollbar for the list */
+        .inventory-scroll::-webkit-scrollbar {
+            width: 8px;
+        }
+        .inventory-scroll::-webkit-scrollbar-track {
+            background: #f1f1f1; 
+        }
+        .inventory-scroll::-webkit-scrollbar-thumb {
+            background: #cbd5e1; 
+            border-radius: 4px;
+        }
+        .inventory-scroll::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8; 
+        }
+
+        .step-card {
+            transition: all 0.3s ease;
+            border-left: 4px solid transparent;
+        }
+        .step-card.active {
+            border-left: 4px solid #FF661A; /* Scratch List Color */
+            background-color: #fff7ed;
+        }
+    </style>
+    <!-- Chosen Palette: Scratch Inspired (Warm Neutrals, Orange/Red Accents for Lists/Vars) -->
+    <!-- Application Structure Plan: Split-screen layout. Left side: "Interactive Guide" (The Logic) presented as cards corresponding to the report steps. Right side: "The Simulator" (The Result) where the user tests the logic in real-time. This connects the abstract code concepts directly to their outcome, reinforcing the learning. -->
+    <!-- Visualization & Content Choices: 
+         1. Doughnut Chart: To visualize "Mochila Capacity" (Step 2 logic). Goal: Inform/Change. Justification: Provides immediate visual feedback on the "Length < 5" condition.
+         2. Dynamic List (HTML/JS): Visualizes the "Inventario" list. Goal: Organize/Track. Justification: Essential to show add/remove operations.
+         3. Virtual Keypad: Goal: Engage. Justification: Replaces physical keyboard to work on mobile/tablets and makes the event triggers explicit.
+         4. Pseudo-Code Blocks: Goal: Inform. Justification: Uses CSS to mimic Scratch blocks, making the transition to the real software seamless. 
+    -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+</head>
+<body class="p-4 md:p-8">
+
+    <!-- Header Section -->
+    <header class="max-w-6xl mx-auto mb-8 text-center">
+        <h1 class="text-3xl md:text-4xl font-extrabold text-slate-800 mb-2">
+            🎒 Simulador de Lógica: Inventario RPG
+        </h1>
+        <p class="text-lg text-slate-600 max-w-2xl mx-auto">
+            Aprende a programar listas en Scratch interactuando con este simulador. 
+            Sigue la guía paso a paso a la izquierda y prueba tu código en la consola virtual a la derecha.
+        </p>
+    </header>
+
+    <!-- Main Content Grid -->
+    <div class="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-8">
+
+        <!-- LEFT COLUMN: The Guide (Logic) -->
+        <section class="space-y-6">
+            <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
+                <h2 class="text-xl font-bold text-slate-800 mb-4 flex items-center">
+                    <span class="bg-orange-100 text-orange-600 p-2 rounded-lg mr-3">1</span>
+                    Guía de Programación
+                </h2>
+                <p class="text-sm text-slate-600 mb-4">
+                    Aquí tienes desglosada la lógica del informe. Haz clic en las tarjetas para ver los detalles de los bloques y luego usa el simulador para verlos en acción.
+                </p>
+
+                <!-- Step 1: Setup -->
+                <div class="step-card bg-white p-4 rounded-lg border border-slate-100 mb-4 cursor-pointer hover:shadow-md" onclick="highlightStep(1)" id="step-1">
+                    <h3 class="font-bold text-lg text-slate-700 mb-2">Paso 1: Variables y Listas</h3>
+                    <p class="text-slate-600 text-sm mb-3">Antes de empezar, necesitamos crear los contenedores de datos.</p>
+                    <div class="flex flex-wrap gap-2">
+                        <span class="scratch-block block-list">Crear lista [Inventario]</span>
+                        <span class="scratch-block block-var">Crear variable [Objeto]</span>
+                    </div>
+                </div>
+
+                <!-- Step 2: Add Item (Key A) -->
+                <div class="step-card active bg-white p-4 rounded-lg border border-slate-100 mb-4 cursor-pointer hover:shadow-md" onclick="highlightStep(2)" id="step-2">
+                    <h3 class="font-bold text-lg text-slate-700 mb-2">Paso 2: Recoger (Tecla A)</h3>
+                    <p class="text-slate-600 text-sm mb-3">Añade objetos solo si hay espacio (Límite: 5).</p>
+                    <div class="space-y-1">
+                        <div class="text-xs text-slate-400 font-mono mb-1">PSEUDOCÓDIGO:</div>
+                        <div><span class="scratch-block block-event">al presionar tecla [a]</span></div>
+                        <div><span class="scratch-block block-sensing">preguntar [¿Qué encontraste?] y esperar</span></div>
+                        <div class="pl-4 border-l-2 border-yellow-300">
+                            <span class="scratch-block block-control">si &lt; (longitud de [Inventario]) < 5 &gt; entonces</span><br>
+                            <span class="scratch-block block-list ml-4">añadir (respuesta) a [Inventario]</span><br>
+                            <span class="scratch-block block-control">si no</span><br>
+                            <span class="scratch-block block-looks ml-4">decir [¡Mochila llena!]</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Step 3: Remove Item (Key X) -->
+                <div class="step-card bg-white p-4 rounded-lg border border-slate-100 mb-4 cursor-pointer hover:shadow-md" onclick="highlightStep(3)" id="step-3">
+                    <h3 class="font-bold text-lg text-slate-700 mb-2">Paso 3: Usar/Eliminar (Tecla X)</h3>
+                    <p class="text-slate-600 text-sm mb-3">Elimina un objeto basándote en su número de posición.</p>
+                    <div class="space-y-1">
+                        <div><span class="scratch-block block-event">al presionar tecla [x]</span></div>
+                        <div><span class="scratch-block block-sensing">preguntar [¿Nº de objeto a usar?] y esperar</span></div>
+                        <div><span class="scratch-block block-list">eliminar (respuesta) de [Inventario]</span></div>
+                    </div>
+                </div>
+
+                <!-- Step 4 & 6: Check & Search -->
+                <div class="step-card bg-white p-4 rounded-lg border border-slate-100 mb-4 cursor-pointer hover:shadow-md" onclick="highlightStep(4)" id="step-4">
+                    <h3 class="font-bold text-lg text-slate-700 mb-2">Paso 4 & 6: Consultar (Espacio / B)</h3>
+                    <p class="text-slate-600 text-sm mb-3">Verifica cuántos objetos tienes o busca uno específico.</p>
+                    <div class="space-y-1">
+                        <div><span class="scratch-block block-event">al presionar tecla [espacio]</span></div>
+                        <div><span class="scratch-block block-looks">decir (unir [Llevas ] (longitud de [Inventario]))</span></div>
+                        <div class="mt-2 border-t pt-2"></div>
+                        <div><span class="scratch-block block-event">al presionar tecla [b]</span></div>
+                        <div><span class="scratch-block block-control">si &lt; [Inventario] contiene (respuesta) ? &gt;</span></div>
+                    </div>
+                </div>
+
+                <!-- Step 5: Reset -->
+                <div class="step-card bg-white p-4 rounded-lg border border-slate-100 mb-4 cursor-pointer hover:shadow-md" onclick="highlightStep(5)" id="step-5">
+                    <h3 class="font-bold text-lg text-slate-700 mb-2">Paso 5: Reiniciar (Tecla C)</h3>
+                    <p class="text-slate-600 text-sm mb-3">Limpia toda la lista para empezar de nuevo.</p>
+                    <div><span class="scratch-block block-event">al presionar tecla [c]</span></div>
+                    <div><span class="scratch-block block-list">eliminar todos de [Inventario]</span></div>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- RIGHT COLUMN: The Simulator (Visuals) -->
+        <section class="space-y-6 sticky top-4">
+            <div class="bg-slate-800 p-6 rounded-xl shadow-xl text-white relative overflow-hidden">
+                <!-- Decoration -->
+                <div class="absolute top-0 right-0 w-32 h-32 bg-slate-700 rounded-full mix-blend-overlay filter blur-2xl opacity-50 -mr-10 -mt-10"></div>
+
+                <h2 class="text-xl font-bold mb-6 flex items-center z-10 relative">
+                    <span class="bg-indigo-500 text-white p-2 rounded-lg mr-3">2</span>
+                    Escenario Virtual (Simulador)
+                </h2>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 z-10 relative">
+                    
+                    <!-- Character Area -->
+                    <div class="flex flex-col items-center justify-center space-y-4">
+                        <div class="relative">
+                            <!-- Speech Bubble -->
+                            <div id="game-bubble" class="absolute -top-20 left-1/2 transform -translate-x-1/2 bg-white text-slate-900 text-sm font-bold py-2 px-4 rounded-xl shadow-lg w-48 text-center transition-opacity duration-300 opacity-0 pointer-events-none">
+                                ¡Hola! Soy tu héroe.
+                                <div class="absolute bottom-0 left-1/2 transform -translate-x-1/2 translate-y-1/2 rotate-45 w-4 h-4 bg-white"></div>
+                            </div>
+                            <!-- Character Icon -->
+                            <div class="w-24 h-24 bg-indigo-500 rounded-full flex items-center justify-center text-4xl shadow-inner border-4 border-indigo-400">
+                                🤖
+                            </div>
+                        </div>
+                        <div class="text-center">
+                            <h4 class="font-bold text-indigo-200">Héroe Scratch</h4>
+                            <p class="text-xs text-indigo-400">Estado: Listo</p>
+                        </div>
+                    </div>
+
+                    <!-- Visual Inventory List -->
+                    <div class="bg-slate-900 rounded-lg p-4 border border-slate-700 flex flex-col h-64">
+                        <div class="flex justify-between items-center mb-2 border-b border-slate-700 pb-2">
+                            <h3 class="font-bold text-orange-500 text-sm uppercase tracking-wide">Inventario</h3>
+                            <span id="inventory-count" class="bg-orange-600 text-xs px-2 py-1 rounded text-white">0 / 5</span>
+                        </div>
+                        <div class="flex-grow overflow-y-auto inventory-scroll" id="inventory-list">
+                            <!-- Items will be injected here -->
+                            <div class="text-slate-500 text-sm italic text-center mt-10">Vacío</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Controls & Chart Area -->
+                <div class="mt-8 grid grid-cols-1 md:grid-cols-2 gap-6 items-center z-10 relative">
+                    
+                    <!-- Virtual Keypad -->
+                    <div>
+                        <p class="text-xs text-slate-400 mb-2 uppercase font-semibold">Controles (Haz clic)</p>
+                        <div class="grid grid-cols-3 gap-2">
+                            <button onclick="handleKey('a')" class="bg-yellow-500 hover:bg-yellow-400 text-slate-900 font-bold py-3 rounded shadow border-b-4 border-yellow-700 active:border-b-0 active:translate-y-1 transition-all">
+                                A
+                                <span class="block text-[10px] font-normal opacity-80">Añadir</span>
+                            </button>
+                            <button onclick="handleKey('x')" class="bg-red-500 hover:bg-red-400 text-white font-bold py-3 rounded shadow border-b-4 border-red-700 active:border-b-0 active:translate-y-1 transition-all">
+                                X
+                                <span class="block text-[10px] font-normal opacity-80">Usar</span>
+                            </button>
+                            <button onclick="handleKey('c')" class="bg-slate-600 hover:bg-slate-500 text-white font-bold py-3 rounded shadow border-b-4 border-slate-800 active:border-b-0 active:translate-y-1 transition-all">
+                                C
+                                <span class="block text-[10px] font-normal opacity-80">Borrar</span>
+                            </button>
+                            <button onclick="handleKey('space')" class="col-span-2 bg-blue-500 hover:bg-blue-400 text-white font-bold py-3 rounded shadow border-b-4 border-blue-700 active:border-b-0 active:translate-y-1 transition-all">
+                                ESPACIO
+                                <span class="block text-[10px] font-normal opacity-80">Consultar Estado</span>
+                            </button>
+                            <button onclick="handleKey('b')" class="bg-purple-500 hover:bg-purple-400 text-white font-bold py-3 rounded shadow border-b-4 border-purple-700 active:border-b-0 active:translate-y-1 transition-all">
+                                B
+                                <span class="block text-[10px] font-normal opacity-80">Buscar</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Capacity Chart -->
+                    <div class="flex flex-col items-center">
+                        <p class="text-xs text-slate-400 mb-2 uppercase font-semibold text-center">Capacidad Mochila</p>
+                        <div class="chart-container">
+                            <canvas id="capacityChart"></canvas>
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- Log / Status Text -->
+                <div class="mt-4 p-2 bg-black bg-opacity-30 rounded text-xs font-mono text-green-400 border border-green-900 h-16 overflow-y-auto" id="console-log">
+                    > Sistema iniciado...<br>
+                    > Esperando comando...
+                </div>
+
+            </div>
+        </section>
+
+    </div>
+
+    <!-- JavaScript Logic -->
+    <script>
+        // --- State Management ---
+        const gameState = {
+            inventory: [],
+            maxCapacity: 5,
+            predefinedItems: ["Poción", "Espada", "Escudo", "Mapa", "Llave", "Manzana", "Antorcha", "Cuerda"]
+        };
+
+        // --- Chart Initialization ---
+        let capacityChart;
+
+        function initChart() {
+            const ctx = document.getElementById('capacityChart').getContext('2d');
+            
+            capacityChart = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Ocupado', 'Libre'],
+                    datasets: [{
+                        data: [0, 5],
+                        backgroundColor: [
+                            '#f97316', // Orange-500 (Occupied)
+                            '#334155'  // Slate-700 (Free)
+                        ],
+                        borderWidth: 0,
+                        hoverOffset: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    cutout: '70%',
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return context.label + ': ' + context.raw;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // --- Core Functions ---
+
+        function updateUI() {
+            // Update List Visual
+            const listEl = document.getElementById('inventory-list');
+            const countEl = document.getElementById('inventory-count');
+            
+            listEl.innerHTML = '';
+            
+            if (gameState.inventory.length === 0) {
+                listEl.innerHTML = '<div class="text-slate-500 text-sm italic text-center mt-10">La mochila está vacía</div>';
+            } else {
+                gameState.inventory.forEach((item, index) => {
+                    const div = document.createElement('div');
+                    div.className = 'bg-slate-800 p-2 mb-1 rounded text-sm text-white flex justify-between items-center border-l-4 border-orange-500 animate-[fadeIn_0.3s_ease-in-out]';
+                    div.innerHTML = `<span>${index + 1}. ${item}</span>`;
+                    listEl.appendChild(div);
+                });
+            }
+
+            countEl.innerText = `${gameState.inventory.length} / ${gameState.maxCapacity}`;
+
+            // Update Chart
+            const occupied = gameState.inventory.length;
+            const free = gameState.maxCapacity - occupied;
+            capacityChart.data.datasets[0].data = [occupied, free];
+            
+            // Change color if full
+            if(free === 0) {
+                capacityChart.data.datasets[0].backgroundColor[0] = '#ef4444'; // Red if full
+            } else {
+                capacityChart.data.datasets[0].backgroundColor[0] = '#f97316'; // Orange normally
+            }
+            
+            capacityChart.update();
+        }
+
+        function logConsole(text) {
+            const consoleEl = document.getElementById('console-log');
+            const newLog = document.createElement('div');
+            newLog.innerText = `> ${text}`;
+            consoleEl.appendChild(newLog);
+            consoleEl.scrollTop = consoleEl.scrollHeight;
+        }
+
+        function characterSay(text) {
+            const bubble = document.getElementById('game-bubble');
+            bubble.innerText = text;
+            
+            // Decoration arrow
+            const arrow = document.createElement('div');
+            arrow.className = 'absolute bottom-0 left-1/2 transform -translate-x-1/2 translate-y-1/2 rotate-45 w-4 h-4 bg-white';
+            bubble.appendChild(arrow);
+
+            bubble.classList.remove('opacity-0');
+            
+            logConsole(`Héroe dice: "${text}"`);
+
+            // Auto hide after 3 seconds
+            setTimeout(() => {
+                bubble.classList.add('opacity-0');
+            }, 3000);
+        }
+
+        function highlightStep(stepId) {
+            // Remove active class from all
+            document.querySelectorAll('.step-card').forEach(el => {
+                el.classList.remove('active', 'bg-orange-50', 'bg-white');
+                el.classList.add('bg-white');
+            });
+
+            // Add active to selected
+            const activeCard = document.getElementById(`step-${stepId}`);
+            if(activeCard) {
+                activeCard.classList.remove('bg-white');
+                activeCard.classList.add('active', 'bg-orange-50');
+            }
+        }
+
+        // --- Interaction Handlers (The "Keys") ---
+
+        async function handleKey(key) {
+            
+            switch(key) {
+                case 'a': // Add
+                    highlightStep(2);
+                    // Mimic "Ask"
+                    // In a real app we might use a custom modal, but prompt works for "Scratch simulation" feel
+                    let newItem = prompt("JUEGO: ¿Qué objeto has encontrado?");
+                    
+                    if (newItem === null || newItem.trim() === "") return; // Cancelled
+
+                    // Logic from Report
+                    if (gameState.inventory.length < gameState.maxCapacity) {
+                        gameState.inventory.push(newItem);
+                        characterSay(`Guardado: ${newItem}`);
+                        updateUI();
+                    } else {
+                        characterSay("¡Mochila llena! No cabe nada más.");
+                    }
+                    break;
+
+                case 'x': // Remove
+                    highlightStep(3);
+                    if (gameState.inventory.length === 0) {
+                        characterSay("No tienes nada para usar.");
+                        return;
+                    }
+
+                    let indexStr = prompt(`JUEGO: ¿Qué número de objeto quieres usar? (1 - ${gameState.inventory.length})`);
+                    let index = parseInt(indexStr);
+
+                    if (isNaN(index) || index < 1 || index > gameState.inventory.length) {
+                        characterSay("Ese número no existe.");
+                    } else {
+                        // Scratch lists are 1-based, JS arrays are 0-based
+                        const removedItem = gameState.inventory.splice(index - 1, 1);
+                        characterSay(`Usaste: ${removedItem}`);
+                        updateUI();
+                    }
+                    break;
+
+                case 'c': // Clear
+                    highlightStep(5);
+                    if(confirm("¿Seguro que quieres borrar todo el inventario?")) {
+                        gameState.inventory = [];
+                        characterSay("Inventario vaciado.");
+                        updateUI();
+                    }
+                    break;
+
+                case 'space': // Check Status
+                    highlightStep(4);
+                    // Logic from Report: "Llevas [length] objetos"
+                    characterSay(`Llevas ${gameState.inventory.length} objetos.`);
+                    break;
+
+                case 'b': // Search (Pro)
+                    highlightStep(4); // Or 6 if separated, but grouped visually
+                    let query = prompt("JUEGO: ¿Qué objeto buscas?");
+                    if (query === null || query.trim() === "") return;
+
+                    // Case insensitive check for better UX
+                    const found = gameState.inventory.some(item => item.toLowerCase() === query.toLowerCase());
+
+                    if (found) {
+                        characterSay("¡Sí, lo tenemos!");
+                    } else {
+                        characterSay("No está en la mochila.");
+                    }
+                    break;
+            }
+        }
+
+        // --- Initialization ---
+        document.addEventListener('DOMContentLoaded', () => {
+            initChart();
+            updateUI();
+            logConsole("Simulador listo. Presiona los botones para empezar.");
+        });
+
+    </script>
+</body>
+</html>ol en Scratch</title>
     <script src="/CYR/assets/tailwind.global.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
