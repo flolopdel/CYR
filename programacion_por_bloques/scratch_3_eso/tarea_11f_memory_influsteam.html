@@ -1,0 +1,609 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Guía Interactiva: Escape Room Científico</title>
+    <script src="/CYR/assets/tailwind.global.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        /* Custom Font Import */
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=JetBrains+Mono:wght@400;700&display=swap');
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #F5F5F4; /* Stone-100 */
+        }
+        
+        .code-font {
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        /* Scratch Block Styling Simulation */
+        .scratch-block {
+            cursor: pointer;
+            transition: transform 0.1s;
+        }
+        .scratch-block:active {
+            transform: scale(0.98);
+        }
+        
+        .scratch-event { background-color: #FFBF00; border-color: #CC9900; color: white; }
+        .scratch-control { background-color: #FFAB19; border-color: #CF8B17; color: white; }
+        .scratch-looks { background-color: #9966FF; border-color: #774DCB; color: white; }
+        .scratch-sensing { background-color: #5CB1D6; border-color: #2E8EB8; color: white; }
+        .scratch-data { background-color: #FF8C1A; border-color: #DB6E00; color: white; }
+        .scratch-motion { background-color: #4C97FF; border-color: #3373CC; color: white; }
+        .scratch-sound { background-color: #CF63CF; border-color: #BD42BD; color: white; }
+
+        /* Chart Container Specifics */
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 300px;
+            max-height: 400px;
+        }
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 350px;
+            }
+        }
+
+        /* Simulation Area */
+        .sim-stage {
+            background-color: #1e293b; /* slate-800 */
+            position: relative;
+            overflow: hidden;
+        }
+        .sim-sprite {
+            transition: all 0.3s ease;
+        }
+    </style>
+    <!-- Chosen Palette: Warm Neutrals with Scratch-Specific Accents (Orange, Yellow, Purple, Blue) -->
+    <!-- Application Structure Plan: 
+         1. Header & Context: Introduces the project goal.
+         2. Data Architecture (Step 1 & 2): Visualizes the Lists and Variables required using interactive cards.
+         3. Logic Flow (Step 3 & 4): A "Code Deconstructor" where users explore the logic blocks interactively.
+         4. Live Simulation: A JS-recreation of the game described in the guide to demonstrate the final output.
+         5. Analytics: A chart showing the skills developed in this activity. 
+    -->
+    <!-- Visualization & Content Choices:
+         - Radar Chart: To show the "Educational Value" (Logic vs Design vs Data).
+         - Interactive Lists: To represent the Scratch List Arrays clearly.
+         - CSS/HTML "Blocks": To represent Scratch code without images/SVG, allowing interaction/explanation.
+         - JS Simulation: To prove the concept of the guide.
+    -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+</head>
+<body class="text-stone-800">
+
+    <!-- Navigation / Header -->
+    <header class="bg-stone-900 text-stone-100 shadow-lg sticky top-0 z-50">
+        <div class="container mx-auto px-4 py-4 flex justify-between items-center">
+            <h1 class="text-xl font-bold tracking-tight">🔬 Guía Lab: Proyecto Scratch</h1>
+            <nav class="hidden md:flex space-x-6 text-sm font-semibold">
+                <a href="#overview" class="hover:text-amber-400 transition">Visión General</a>
+                <a href="#data-structure" class="hover:text-amber-400 transition">Datos (Listas)</a>
+                <a href="#logic-flow" class="hover:text-amber-400 transition">Lógica de Bloques</a>
+                <a href="#simulation" class="hover:text-amber-400 transition">Simulador</a>
+            </nav>
+        </div>
+    </header>
+
+    <main class="container mx-auto px-4 py-8 space-y-16">
+
+        <!-- SECTION 1: OVERVIEW & CONTEXT -->
+        <section id="overview" class="grid md:grid-cols-2 gap-12 items-center">
+            <div class="space-y-6">
+                <div class="inline-block bg-amber-100 text-amber-800 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wide">3º ESO - Pensamiento Computacional</div>
+                <h2 class="text-4xl font-bold text-stone-900 leading-tight">Escape Room: Científicas Españolas</h2>
+                <p class="text-lg text-stone-600 leading-relaxed">
+                    Esta aplicación interactiva desglosa la guía didáctica para crear un juego en Scratch. 
+                    El objetivo es recuperar la identidad de científicas relevantes utilizando <span class="font-bold text-stone-800">listas, variables y sensores</span>.
+                </p>
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="bg-white p-4 rounded-lg shadow-sm border-l-4 border-amber-500">
+                        <div class="text-2xl font-bold text-amber-600">6</div>
+                        <div class="text-sm text-stone-500">Científicas a Programar</div>
+                    </div>
+                    <div class="bg-white p-4 rounded-lg shadow-sm border-l-4 border-blue-500">
+                        <div class="text-2xl font-bold text-blue-600">60s</div>
+                        <div class="text-sm text-stone-500">Límite de Tiempo</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Educational Value Chart -->
+            <div class="bg-white p-6 rounded-xl shadow-md">
+                <h3 class="text-lg font-semibold mb-4 text-center">Habilidades del Proyecto</h3>
+                <div class="chart-container">
+                    <canvas id="skillsChart"></canvas>
+                </div>
+                <p class="text-xs text-center text-stone-400 mt-2">Distribución de competencias trabajadas en la guía.</p>
+            </div>
+        </section>
+
+        <!-- SECTION 2: DATA STRUCTURE (Steps 1 & 2) -->
+        <section id="data-structure" class="bg-white rounded-2xl shadow-sm border border-stone-200 p-8">
+            <div class="max-w-3xl mx-auto text-center mb-10">
+                <h2 class="text-3xl font-bold mb-3">Arquitectura de Datos</h2>
+                <p class="text-stone-600">
+                    El corazón del proyecto son dos <strong>listas sincronizadas</strong> y variables de control. 
+                    Explora cómo se relacionan los índices (ID) con los datos.
+                </p>
+            </div>
+
+            <div class="grid md:grid-cols-3 gap-8">
+                <!-- List 1: Científicas -->
+                <div class="col-span-1 bg-stone-50 rounded-xl p-6 border border-stone-200">
+                    <h3 class="font-bold text-red-600 mb-4 flex items-center gap-2">
+                        <span class="bg-red-100 p-1 rounded">Lista</span> Científicas
+                    </h3>
+                    <ul class="space-y-2 text-sm font-mono text-stone-700" id="list-scientists">
+                        <!-- Populated by JS -->
+                    </ul>
+                </div>
+
+                <!-- Linkage Visualization -->
+                <div class="col-span-1 flex flex-col justify-center items-center space-y-4">
+                    <div class="text-center p-4 bg-orange-50 rounded-lg border border-orange-200 w-full">
+                        <h4 class="font-bold text-orange-600 mb-2">Variable: ID</h4>
+                        <div class="text-4xl font-bold text-stone-800" id="current-id-display">1</div>
+                        <p class="text-xs text-stone-500 mt-1">Índice actual</p>
+                    </div>
+                    <div class="text-4xl text-stone-300">↔</div>
+                    <p class="text-center text-xs text-stone-500 px-4">
+                        La variable <strong>ID</strong> conecta la posición X de la lista de Nombres con la posición X de la lista de Pistas.
+                    </p>
+                </div>
+
+                <!-- List 2: Pistas -->
+                <div class="col-span-1 bg-stone-50 rounded-xl p-6 border border-stone-200">
+                    <h3 class="font-bold text-red-600 mb-4 flex items-center gap-2">
+                        <span class="bg-red-100 p-1 rounded">Lista</span> Pistas
+                    </h3>
+                    <ul class="space-y-2 text-sm font-mono text-stone-700" id="list-clues">
+                        <!-- Populated by JS -->
+                    </ul>
+                </div>
+            </div>
+
+            <div class="mt-8 flex justify-center">
+                <button id="cycle-data-btn" class="bg-stone-800 hover:bg-stone-700 text-white px-6 py-2 rounded-lg transition shadow-lg flex items-center gap-2">
+                    <span>↻ Simular Recorrido del Índice (ID)</span>
+                </button>
+            </div>
+        </section>
+
+        <!-- SECTION 3: LOGIC FLOW (Steps 3 & 4) -->
+        <section id="logic-flow" class="space-y-8">
+            <div class="max-w-3xl mx-auto text-center">
+                <h2 class="text-3xl font-bold mb-3">Lógica de Bloques</h2>
+                <p class="text-stone-600">
+                    Desglose del algoritmo para el objeto "Científica". Haz clic en los bloques para entender su función.
+                </p>
+            </div>
+
+            <div class="grid lg:grid-cols-2 gap-12">
+                <!-- Interactive Code Block Area -->
+                <div class="bg-stone-100 p-6 rounded-xl border border-stone-200 shadow-inner overflow-y-auto max-h-[600px]">
+                    <h3 class="text-sm font-bold text-stone-400 uppercase tracking-wider mb-4">Script: Objeto Científica</h3>
+                    
+                    <div class="space-y-2 select-none">
+                        <!-- Block Group 1: Init -->
+                        <div class="scratch-block scratch-event p-3 rounded-lg rounded-bl-none rounded-br-none mb-0 font-bold text-sm shadow-sm" onclick="explainBlock('init')">Al hacer clic en este objeto</div>
+                        
+                        <!-- Block Group 2: Ask -->
+                        <div class="pl-4 border-l-4 border-stone-300 space-y-2">
+                            <div class="scratch-block scratch-looks p-2 rounded text-sm shadow-sm" onclick="explainBlock('say')">decir (elemento (ID) de [Pistas v]) por (4) seg</div>
+                            <div class="scratch-block scratch-sensing p-2 rounded text-sm shadow-sm" onclick="explainBlock('ask')">preguntar "¿Quién soy?" y esperar</div>
+                            
+                            <!-- Block Group 3: Condition -->
+                            <div class="scratch-block scratch-control p-2 rounded text-sm shadow-sm flex flex-col gap-2" onclick="explainBlock('if')">
+                                <span>si &lt;(respuesta) = (elemento (ID) de [Científicas v])&gt; entonces</span>
+                                <div class="pl-4 py-1 space-y-1 bg-black bg-opacity-10 rounded">
+                                    <div class="scratch-block scratch-looks p-2 rounded text-xs">cambiar disfraz a "foto_real"</div>
+                                    <div class="scratch-block scratch-data p-2 rounded text-xs">sumar a [Aciertos v] (1)</div>
+                                    <div class="scratch-block scratch-sound p-2 rounded text-xs">tocar sonido [éxito v]</div>
+                                </div>
+                                <span>si no</span>
+                                <div class="pl-4 py-1 space-y-1 bg-black bg-opacity-10 rounded">
+                                    <div class="scratch-block scratch-looks p-2 rounded text-xs">decir "¡Error!" por (2) seg</div>
+                                    <div class="scratch-block scratch-data p-2 rounded text-xs">sumar a [Cronómetro v] (-5)</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Explanation Panel -->
+                <div class="flex flex-col justify-center">
+                    <div id="explanation-card" class="bg-white p-8 rounded-xl shadow-lg border-t-4 border-stone-800 transition-all duration-300">
+                        <div class="mb-4 text-4xl">👆</div>
+                        <h3 class="text-xl font-bold mb-2" id="expl-title">Explorador de Lógica</h3>
+                        <p class="text-stone-600 leading-relaxed" id="expl-text">
+                            Haz clic en los bloques de la izquierda para ver una explicación detallada de cómo funcionan y por qué son necesarios según la guía.
+                        </p>
+                        <div class="mt-6 p-4 bg-stone-50 rounded border border-stone-200 hidden" id="expl-tip-box">
+                            <span class="font-bold text-amber-600 text-xs uppercase">Consejo Docente:</span>
+                            <p class="text-sm text-stone-700 mt-1" id="expl-tip">...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION 4: SIMULATION (Prototype) -->
+        <section id="simulation" class="pt-8 pb-16">
+            <div class="max-w-4xl mx-auto">
+                <div class="text-center mb-8">
+                    <h2 class="text-3xl font-bold mb-2">Prototipo Funcional</h2>
+                    <p class="text-stone-600">Prueba el resultado final de la guía programada aquí mismo.</p>
+                </div>
+
+                <!-- Game Container -->
+                <div class="bg-stone-900 rounded-xl overflow-hidden shadow-2xl max-w-2xl mx-auto border-4 border-stone-800">
+                    <!-- HUD -->
+                    <div class="bg-stone-800 p-3 flex justify-between items-center text-white font-mono text-sm">
+                        <div class="flex gap-4">
+                            <div class="flex flex-col">
+                                <span class="text-xs text-stone-400">CRONÓMETRO</span>
+                                <span id="sim-timer" class="text-xl font-bold text-green-400">60</span>
+                            </div>
+                            <div class="flex flex-col">
+                                <span class="text-xs text-stone-400">ACIERTOS</span>
+                                <span id="sim-score" class="text-xl font-bold text-amber-400">0/6</span>
+                            </div>
+                        </div>
+                        <button id="start-game-btn" class="bg-green-600 hover:bg-green-500 px-4 py-2 rounded text-white font-bold transition">INICIAR JUEGO</button>
+                    </div>
+
+                    <!-- Stage -->
+                    <div id="game-stage" class="sim-stage h-80 relative flex items-center justify-center">
+                        <div id="start-overlay" class="absolute inset-0 bg-black bg-opacity-80 flex items-center justify-center z-20">
+                            <p class="text-white text-center px-6">Pulsa "INICIAR JUEGO" para comenzar la simulación.</p>
+                        </div>
+                        
+                        <!-- Grid of Scientists (Represented by divs) -->
+                        <div id="sprites-container" class="grid grid-cols-3 gap-8 p-8 w-full h-full opacity-30 pointer-events-none transition-opacity duration-500">
+                            <!-- Sprites injected via JS -->
+                        </div>
+
+                        <!-- Feedback Modal (The "Say" block) -->
+                        <div id="game-modal" class="absolute bottom-4 left-4 right-4 bg-white rounded-lg p-4 shadow-xl z-30 hidden transform transition-all">
+                            <p id="modal-text" class="font-bold text-stone-800 mb-2">Pista...</p>
+                            <div id="input-area" class="flex gap-2">
+                                <input type="text" id="game-input" placeholder="Nombre..." class="flex-1 border border-stone-300 rounded px-2 py-1 focus:outline-none focus:border-blue-500 text-sm">
+                                <button id="submit-answer" class="bg-blue-600 text-white px-3 py-1 rounded text-sm hover:bg-blue-500">Responder</button>
+                            </div>
+                        </div>
+                        
+                        <!-- Game Over / Win Screens -->
+                         <div id="end-screen" class="absolute inset-0 bg-stone-900 flex flex-col items-center justify-center z-40 hidden">
+                            <h3 id="end-title" class="text-2xl font-bold text-white mb-2">Game Over</h3>
+                            <p id="end-msg" class="text-stone-300 text-sm mb-4">Inténtalo de nuevo.</p>
+                            <button onclick="resetGame()" class="border border-white text-white px-4 py-2 rounded hover:bg-white hover:text-stone-900 transition">Reiniciar</button>
+                        </div>
+                    </div>
+                </div>
+                <p class="text-center text-xs text-stone-400 mt-4">
+                    Nota: Esta simulación utiliza JavaScript para imitar el comportamiento de los bloques de Scratch descritos en la guía.
+                </p>
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="bg-stone-200 py-8 mt-12">
+        <div class="container mx-auto px-4 text-center text-stone-500 text-sm">
+            <p>Generado a partir de la Guía Didáctica "Escape Room de Científicas Españolas en Scratch".</p>
+        </div>
+    </footer>
+
+    <!-- JavaScript Logic -->
+    <script>
+        // --- DATA CONSTANTS (From Guide) ---
+        const scientists = [
+            { id: 1, name: "Sara García", clue: "Soy biotecnóloga y primera astronauta española (reserva).", short: "S. García" },
+            { id: 2, name: "Elena García Armada", clue: "Inventora del exoesqueleto biónico para niños.", short: "E. García" },
+            { id: 3, name: "Clara Grima", clue: "Matemática que descubrió el escuitoide.", short: "C. Grima" },
+            { id: 4, name: "Nuria Oliver", clue: "Experta en Inteligencia Artificial y Big Data.", short: "N. Oliver" },
+            { id: 5, name: "Margarita del Val", clue: "Viróloga e investigadora del CSIC sobre vacunas.", short: "M. del Val" },
+            { id: 6, name: "Teresa Paneque", clue: "Astrónoma y divulgadora sobre formación de planetas.", short: "T. Paneque" }
+        ];
+
+        // --- CHART.JS INITIALIZATION ---
+        document.addEventListener('DOMContentLoaded', () => {
+            const ctx = document.getElementById('skillsChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'radar',
+                data: {
+                    labels: ['Lógica (If/Else)', 'Datos (Listas)', 'Variables', 'UI/UX (Disfraces)', 'Eventos', 'Depuración'],
+                    datasets: [{
+                        label: 'Nivel de Competencia',
+                        data: [9, 8, 7, 6, 8, 5],
+                        fill: true,
+                        backgroundColor: 'rgba(245, 158, 11, 0.2)', // Amber-500
+                        borderColor: 'rgba(245, 158, 11, 1)',
+                        pointBackgroundColor: 'rgb(245, 158, 11)',
+                        pointBorderColor: '#fff',
+                        pointHoverBackgroundColor: '#fff',
+                        pointHoverBorderColor: 'rgb(245, 158, 11)'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    elements: { line: { borderWidth: 3 } },
+                    scales: {
+                        r: {
+                            angleLines: { color: 'rgba(0, 0, 0, 0.1)' },
+                            grid: { color: 'rgba(0, 0, 0, 0.05)' },
+                            pointLabels: { font: { size: 11, family: 'Inter' } },
+                            suggestedMin: 0,
+                            suggestedMax: 10,
+                            ticks: { display: false }
+                        }
+                    },
+                    plugins: {
+                        legend: { display: false }
+                    }
+                }
+            });
+
+            // Populate Section 2 Lists
+            const nameList = document.getElementById('list-scientists');
+            const clueList = document.getElementById('list-clues');
+            
+            scientists.forEach(sci => {
+                // Name List Item
+                const liName = document.createElement('li');
+                liName.innerHTML = `<span class="inline-block w-6 h-6 text-center bg-stone-200 rounded text-xs leading-6 mr-2">${sci.id}</span> ${sci.name}`;
+                liName.id = `name-${sci.id}`;
+                liName.className = "p-2 rounded transition-colors";
+                nameList.appendChild(liName);
+
+                // Clue List Item
+                const liClue = document.createElement('li');
+                liClue.innerHTML = `<span class="inline-block w-6 h-6 text-center bg-stone-200 rounded text-xs leading-6 mr-2">${sci.id}</span> <span class="text-xs text-stone-500 truncate block sm:inline">${sci.clue.substring(0, 30)}...</span>`;
+                liClue.id = `clue-${sci.id}`;
+                liClue.className = "p-2 rounded transition-colors";
+                clueList.appendChild(liClue);
+            });
+        });
+
+        // --- SECTION 2: DATA CYCLING LOGIC ---
+        let cyclingInterval = null;
+        let currentCycleId = 1;
+
+        document.getElementById('cycle-data-btn').addEventListener('click', () => {
+            const btn = document.getElementById('cycle-data-btn');
+            
+            if (cyclingInterval) {
+                clearInterval(cyclingInterval);
+                cyclingInterval = null;
+                btn.classList.remove('bg-red-600');
+                btn.classList.add('bg-stone-800');
+                btn.innerHTML = '<span>↻ Simular Recorrido del Índice (ID)</span>';
+                resetHighlights();
+            } else {
+                btn.classList.remove('bg-stone-800');
+                btn.classList.add('bg-red-600');
+                btn.innerHTML = '<span>⏹ Detener Simulación</span>';
+                cyclingInterval = setInterval(highlightCycle, 1000);
+            }
+        });
+
+        function resetHighlights() {
+            document.querySelectorAll('#list-scientists li, #list-clues li').forEach(el => {
+                el.classList.remove('bg-amber-100', 'font-bold');
+            });
+        }
+
+        function highlightCycle() {
+            resetHighlights();
+            document.getElementById('current-id-display').innerText = currentCycleId;
+            
+            const nameEl = document.getElementById(`name-${currentCycleId}`);
+            const clueEl = document.getElementById(`clue-${currentCycleId}`);
+            
+            if(nameEl) nameEl.classList.add('bg-amber-100', 'font-bold');
+            if(clueEl) clueEl.classList.add('bg-amber-100', 'font-bold');
+
+            currentCycleId++;
+            if (currentCycleId > 6) currentCycleId = 1;
+        }
+
+        // --- SECTION 3: LOGIC EXPLORER ---
+        const explanations = {
+            'init': {
+                title: 'Evento de Inicio',
+                text: 'Este bloque prepara el objeto cuando empieza el juego. Es crucial reiniciar las variables (como el disfraz) para que cada partida empiece limpia.',
+                tip: 'Siempre usa "Mostrar" aquí, por si el objeto se ocultó en la partida anterior.'
+            },
+            'say': {
+                title: 'Presentación de Pista',
+                text: 'El bloque accede a la lista "Pistas". Usa la variable ID del objeto para saber qué fila de la lista debe leer.',
+                tip: 'El tiempo (4 seg) debe ser suficiente para leer la pista.'
+            },
+            'ask': {
+                title: 'Sensor de Pregunta',
+                text: 'Detiene la ejecución y abre un campo de texto para el usuario. La respuesta se guarda temporalmente en la variable del sistema "respuesta".',
+                tip: 'En Scratch, este bloque congela el script hasta que el usuario pulsa Enter.'
+            },
+            'if': {
+                title: 'Validación Condicional',
+                text: 'El núcleo del juego. Compara lo que escribió el usuario con el elemento correspondiente en la lista "Científicas". Si coinciden, ejecuta el bloque de éxito; si no, el de error.',
+                tip: 'Recuerda a los alumnos que las tildes importan en esta comparación.'
+            }
+        };
+
+        function explainBlock(key) {
+            const data = explanations[key];
+            const titleEl = document.getElementById('expl-title');
+            const textEl = document.getElementById('expl-text');
+            const tipBox = document.getElementById('expl-tip-box');
+            const tipText = document.getElementById('expl-tip');
+
+            // Animation Reset
+            const card = document.getElementById('explanation-card');
+            card.classList.remove('border-stone-800');
+            void card.offsetWidth; // trigger reflow
+            card.classList.add('border-stone-800');
+
+            titleEl.innerText = data.title;
+            textEl.innerText = data.text;
+            tipText.innerText = data.tip;
+            tipBox.classList.remove('hidden');
+        }
+
+        // --- SECTION 4: GAME SIMULATION ---
+        let gameTimer = 60;
+        let gameScore = 0;
+        let gameActive = false;
+        let timerInterval = null;
+        let activeSpriteId = null;
+
+        const spritesContainer = document.getElementById('sprites-container');
+        const timerDisplay = document.getElementById('sim-timer');
+        const scoreDisplay = document.getElementById('sim-score');
+        const gameModal = document.getElementById('game-modal');
+        const modalText = document.getElementById('modal-text');
+        const gameInput = document.getElementById('game-input');
+        const submitBtn = document.getElementById('submit-answer');
+        const startOverlay = document.getElementById('start-overlay');
+        const endScreen = document.getElementById('end-screen');
+
+        // Initialize Sprites UI
+        function initGameUI() {
+            spritesContainer.innerHTML = '';
+            scientists.forEach(sci => {
+                const div = document.createElement('div');
+                div.className = 'sim-sprite bg-stone-700 rounded-full flex items-center justify-center text-white cursor-pointer hover:bg-stone-600 hover:scale-105 border-4 border-stone-600';
+                div.style.height = '80px';
+                div.style.width = '80px';
+                div.innerText = '?';
+                div.dataset.id = sci.id;
+                div.dataset.solved = 'false';
+                
+                div.addEventListener('click', () => handleSpriteClick(sci.id));
+                spritesContainer.appendChild(div);
+            });
+        }
+
+        document.getElementById('start-game-btn').addEventListener('click', startGame);
+
+        function startGame() {
+            if (gameActive) return;
+            initGameUI();
+            
+            gameActive = true;
+            gameTimer = 60;
+            gameScore = 0;
+            
+            timerDisplay.innerText = gameTimer;
+            scoreDisplay.innerText = `0/6`;
+            
+            startOverlay.classList.add('hidden');
+            endScreen.classList.add('hidden');
+            spritesContainer.classList.remove('opacity-30', 'pointer-events-none');
+
+            timerInterval = setInterval(() => {
+                gameTimer--;
+                timerDisplay.innerText = gameTimer;
+                if (gameTimer <= 0) endGame(false);
+            }, 1000);
+        }
+
+        function handleSpriteClick(id) {
+            const sprite = document.querySelector(`.sim-sprite[data-id="${id}"]`);
+            if (sprite.dataset.solved === 'true') return;
+
+            activeSpriteId = id;
+            const data = scientists.find(s => s.id === id);
+            
+            // Show Modal (Simulating "Say" + "Ask")
+            modalText.innerText = data.clue;
+            gameInput.value = '';
+            gameModal.classList.remove('hidden');
+            gameInput.focus();
+        }
+
+        submitBtn.addEventListener('click', validateAnswer);
+        gameInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') validateAnswer();
+        });
+
+        function validateAnswer() {
+            if (!activeSpriteId) return;
+
+            const input = gameInput.value.trim();
+            const data = scientists.find(s => s.id === activeSpriteId);
+            
+            // Loose matching for demo purposes (case insensitive)
+            const isCorrect = input.toLowerCase() === data.name.toLowerCase() || input.toLowerCase() === data.name.split(" ")[0].toLowerCase();
+
+            if (isCorrect) {
+                // Correct Logic
+                const sprite = document.querySelector(`.sim-sprite[data-id="${activeSpriteId}"]`);
+                sprite.dataset.solved = 'true';
+                sprite.classList.remove('bg-stone-700', 'border-stone-600');
+                sprite.classList.add('bg-green-600', 'border-green-400');
+                sprite.innerHTML = '✓'; // Simulating "Real Photo" costume
+                
+                gameScore++;
+                scoreDisplay.innerText = `${gameScore}/6`;
+                gameModal.classList.add('hidden');
+                activeSpriteId = null;
+
+                if (gameScore === 6) endGame(true);
+            } else {
+                // Incorrect Logic
+                modalText.innerText = "¡Error! -5 segundos";
+                modalText.classList.add('text-red-600');
+                gameTimer -= 5;
+                timerDisplay.innerText = gameTimer;
+                
+                // Visual shake
+                gameModal.classList.add('translate-x-2');
+                setTimeout(() => {
+                    gameModal.classList.remove('translate-x-2');
+                    modalText.innerText = data.clue;
+                    modalText.classList.remove('text-red-600');
+                }, 200);
+            }
+        }
+
+        function endGame(win) {
+            gameActive = false;
+            clearInterval(timerInterval);
+            gameModal.classList.add('hidden');
+            endScreen.classList.remove('hidden');
+            
+            const title = document.getElementById('end-title');
+            const msg = document.getElementById('end-msg');
+
+            if (win) {
+                title.innerText = "¡Misión Cumplida!";
+                title.className = "text-2xl font-bold text-green-400 mb-2";
+                msg.innerText = `Has recuperado a las 6 científicas en ${60 - gameTimer} segundos.`;
+            } else {
+                title.innerText = "Game Over";
+                title.className = "text-2xl font-bold text-red-500 mb-2";
+                msg.innerText = "Se acabó el tiempo. Los datos se han perdido.";
+            }
+        }
+
+        function resetGame() {
+            startGame();
+        }
+
+        // Initialize UI on load
+        initGameUI();
+
+    </script>
+</body>
+</html>
