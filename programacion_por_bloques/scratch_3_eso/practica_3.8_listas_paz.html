@@ -3,304 +3,525 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Simulador Scratch: Acciones por la Paz</title>
+    <title>Guía Interactiva: Mural de la Paz en Scratch</title>
     <script src="/CYR/assets/tailwind.global.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
     <style>
-        body {
-            font-family: 'Nunito', sans-serif;
-            background-color: #f0fdf4; /* Light Green background for Peace theme */
-            color: #166534;
-        }
-        
-        .scratch-block {
-            padding: 8px 12px;
-            border-radius: 4px;
-            color: white;
-            font-weight: bold;
-            display: inline-block;
-            margin: 2px 0;
-            box-shadow: 0 2px 0 rgba(0,0,0,0.2);
-            font-size: 0.9rem;
-            cursor: default;
-        }
-        .block-event { background-color: #FFBF00; border: 1px solid #E6AC00; }
-        .block-control { background-color: #FFAB19; border: 1px solid #CF8B17; }
-        .block-sensing { background-color: #5CB1D6; border: 1px solid #2E8EB8; }
-        .block-list { background-color: #FF661A; border: 1px solid #D94D0C; }
-        .block-looks { background-color: #9966FF; border: 1px solid #774DCB; }
-        .block-operator { background-color: #59C059; border: 1px solid #389438; }
-
         .chart-container {
             position: relative;
             width: 100%;
-            max-width: 300px; 
-            margin: auto;
-            height: 250px;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 300px;
+            max-height: 400px;
         }
-
-        .inventory-scroll::-webkit-scrollbar { width: 8px; }
-        .inventory-scroll::-webkit-scrollbar-track { background: #f0fdf4; }
-        .inventory-scroll::-webkit-scrollbar-thumb { background: #bbf7d0; border-radius: 4px; }
-
-        .step-card {
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 350px;
+            }
+        }
+        .scratch-block {
+            border-left-width: 4px;
             transition: all 0.3s ease;
-            border-left: 4px solid transparent;
         }
-        .step-card.active {
-            border-left: 4px solid #22c55e;
-            background-color: #f0fdf4;
+        .active-step {
+            background-color: #fef3c7; /* amber-100 */
+            border-left-color: #d97706; /* amber-600 */
+            transform: translateX(10px);
         }
     </style>
-    <!-- Chosen Palette: Peace & Non-Violence (Green, Soft Blue, White Dove tones) -->
-    <!-- Application Structure Plan: Adaptive dashboard layout. The guide moves from a "Survival Inventory" to a "Peace Toolkit". Each step is re-contextualized for empathy and conflict resolution. The simulator uses a "Messenger Dove" character and heart-based capacity visualization. -->
-    <!-- Visualization & Content Choices: 
-         1. Heart Doughnut Chart: Represents "Harmonía Escolar". Goal: Change.
-         2. Peace Icons (Canvas/Emoji): Replaces RPG icons to set the theme.
-         3. Action-based logic: "Add weapon" becomes "Add positive action". 
+</head>
+<body class="bg-stone-50 text-stone-800 font-sans leading-relaxed">
+
+    <!-- Chosen Palette: Warm Neutrals (Stone/Amber) with Functional Colors (Green for Success, Red for Error, Blue for Logic) -->
+    <!-- Application Structure Plan:
+         1. Header: Context and Objective.
+         2. Simulation Core: A split-screen interactive area. Left side contains the "Controls" (Keys A, X, B, C, Space) and Inputs. Right side contains the "Visual Feedback" (The Mural List, The Blacklist, The Character's Speech). This allows users to "play" the code logic immediately.
+         3. Logic Flow Visualization: Below the simulator, a dynamic step-by-step list highlights exactly which part of the code is executing in real-time based on user actions. This teaches the algorithm.
+         4. Analytics: A Chart.js bar chart tracks the user's attempts (Successful, Blocked, Transformed) to visualize the effectiveness of the filters.
+         5. Step-by-Step Documentation: Static reference content organized by logical task (Setup, Writing, Deleting), updated with insights from the interactive session.
+    -->
+    <!-- Visualization & Content Choices:
+         1. Interactive Lists (HTML/JS): Displays 'Mural de la Paz' and 'Acciones Negativas' to show state changes without SVG. Goal: Organize & Inform.
+         2. Dynamic Logic Flow (HTML/CSS Classes): Highlights text blocks to show conditional branching (If/Else) in real-time. Goal: Change/Process Flow.
+         3. Action Statistics (Chart.js): Bar chart showing outcomes of user interactions. Goal: Summarize/Compare effectiveness of logic.
+         4. Character Feedback (HTML/JS): A speech bubble simulating the Scratch character's output. Goal: Inform/Feedback.
     -->
     <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
-</head>
-<body class="p-4 md:p-8">
 
-    <header class="max-w-6xl mx-auto mb-8 text-center">
-        <h1 class="text-3xl md:text-4xl font-extrabold text-green-800 mb-2">
-            🕊️ Scratch por la Paz y la Convivencia
-        </h1>
-        <p class="text-lg text-green-700 max-w-2xl mx-auto">
-            Transforma la lógica de listas en una herramienta para mejorar tu centro educativo.
-            Recoge acciones positivas y construye un entorno sin violencia.
-        </p>
-    </header>
+    <div class="max-w-6xl mx-auto px-4 py-8">
+        
+        <!-- Header Section -->
+        <header class="text-center mb-12">
+            <h1 class="text-4xl md:text-5xl font-bold text-stone-700 mb-4">🕊️ El Mural de la Paz: Laboratorio de Lógica</h1>
+            <p class="text-lg text-stone-600 max-w-3xl mx-auto">
+                Bienvenido a la guía interactiva para programar tu proyecto en Scratch. 
+                Aquí no solo leerás las instrucciones, sino que <strong>simularás el cerebro del programa</strong>. 
+                Aprende cómo gestionar listas, aplicar filtros de moderación y transformar valores negativos en positivos.
+            </p>
+        </header>
 
-    <div class="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-8">
-
-        <!-- LEFT COLUMN: The Pedagogy -->
-        <section class="space-y-6">
-            <div class="bg-white p-6 rounded-xl shadow-sm border border-green-100">
-                <h2 class="text-xl font-bold text-green-800 mb-4 flex items-center">
-                    <span class="bg-green-100 text-green-600 p-2 rounded-lg mr-3">1</span>
-                    Reto: El Muro de la Convivencia
-                </h2>
-                
-                <!-- Step 1: Concept -->
-                <div class="step-card active bg-white p-4 rounded-lg border border-slate-100 mb-4 cursor-pointer" onclick="highlightStep(1)" id="step-1">
-                    <h3 class="font-bold text-lg text-green-700 mb-2">Paso 1: La Lista de Acciones</h3>
-                    <p class="text-slate-600 text-sm mb-3">Nuestra lista no guarda "objetos", guarda <strong>acciones</strong> que ayudan a los demás.</p>
-                    <div class="flex flex-wrap gap-2">
-                        <span class="scratch-block block-list">Crear lista [Muro de Paz]</span>
-                    </div>
-                </div>
-
-                <!-- Step 2: Positive Actions (Key A) -->
-                <div class="step-card bg-white p-4 rounded-lg border border-slate-100 mb-4 cursor-pointer" onclick="highlightStep(2)" id="step-2">
-                    <h3 class="font-bold text-lg text-green-700 mb-2">Paso 2: Sembrar Paz (Tecla A)</h3>
-                    <p class="text-slate-600 text-sm mb-3">Pregunta por una acción positiva (ej. "Ayudar a un compañero") y añádela.</p>
-                    <div class="space-y-1">
-                        <div><span class="scratch-block block-event">al presionar tecla [a]</span></div>
-                        <div><span class="scratch-block block-sensing">preguntar [¿Qué acción de paz has visto hoy?]</span></div>
-                        <div class="pl-4 border-l-2 border-green-300">
-                            <span class="scratch-block block-list">añadir (respuesta) a [Muro de Paz]</span>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Step 3: Conflict Resolution (Key X) -->
-                <div class="step-card bg-white p-4 rounded-lg border border-slate-100 mb-4 cursor-pointer" onclick="highlightStep(3)" id="step-3">
-                    <h3 class="font-bold text-lg text-green-700 mb-2">Paso 3: Resolver Conflicto (Tecla X)</h3>
-                    <p class="text-slate-600 text-sm mb-3">Cuando resolvemos un problema, "usamos" una de nuestras herramientas de paz de la lista.</p>
-                    <div class="space-y-1">
-                        <div><span class="scratch-block block-sensing">preguntar [¿Qué acción aplicamos para resolverlo?]</span></div>
-                        <div><span class="scratch-block block-list">eliminar (respuesta) de [Muro de Paz]</span></div>
-                    </div>
-                </div>
-
-                <!-- Step 4: Search Empathy (Key B) -->
-                <div class="step-card bg-white p-4 rounded-lg border border-slate-100 mb-4 cursor-pointer" onclick="highlightStep(4)" id="step-4">
-                    <h3 class="font-bold text-lg text-green-700 mb-2">Paso 4: Buscar Empatía (Tecla B)</h3>
-                    <p class="text-slate-600 text-sm mb-3">Comprueba si un valor (ej. "Respeto") ya está presente en nuestro muro.</p>
-                    <div class="space-y-1">
-                        <div><span class="scratch-block block-control">si &lt; [Muro de Paz] contiene [Respeto] ? &gt;</span></div>
-                        <span class="scratch-block block-looks ml-4">decir [¡Nuestro centro es un lugar seguro!]</span>
-                    </div>
-                </div>
-
-            </div>
+        <!-- Simulation Section Intro -->
+        <section class="mb-6">
+            <h2 class="text-2xl font-bold text-stone-700 mb-2">1. Simulador del Proyecto</h2>
+            <p class="text-stone-600 mb-4">
+                Esta sección es el corazón de tu aprendizaje. Utiliza el panel de control a la izquierda para actuar como el usuario del juego. 
+                Observa a la derecha cómo reacciona tu "programa" (las listas y el personaje) y debajo cómo se ejecuta la lógica paso a paso.
+                Prueba a escribir palabras como "Guerra" u "Odio" para ver el <strong>Transformador</strong> en acción.
+            </p>
         </section>
 
-        <!-- RIGHT COLUMN: The Interactive Peace Simulator -->
-        <section class="space-y-6 sticky top-4">
-            <div class="bg-white p-6 rounded-xl shadow-xl border-4 border-green-200 relative overflow-hidden">
+        <!-- Main Interactive Dashboard -->
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 mb-16">
+            
+            <!-- LEFT COLUMN: Controls & Logic Trace -->
+            <div class="lg:col-span-5 flex flex-col gap-6">
                 
-                <h2 class="text-xl font-bold text-green-800 mb-6 flex items-center">
-                    <span class="bg-green-500 text-white p-2 rounded-lg mr-3">2</span>
-                    Simulador de Convivencia
-                </h2>
-
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Control Panel -->
+                <div class="bg-white p-6 rounded-xl shadow-md border border-stone-200">
+                    <h3 class="font-bold text-xl text-indigo-600 mb-4">🎮 Controles (Teclado Virtual)</h3>
                     
-                    <!-- Avatar Area -->
-                    <div class="flex flex-col items-center justify-center space-y-4 bg-blue-50 rounded-xl p-4">
-                        <div class="relative">
-                            <div id="game-bubble" class="absolute -top-16 left-1/2 transform -translate-x-1/2 bg-white text-green-800 text-xs font-bold py-2 px-4 rounded-lg shadow-md w-40 text-center opacity-0 transition-opacity">
-                                ¡Haz una buena acción!
-                            </div>
-                            <div class="w-20 h-20 bg-white rounded-full flex items-center justify-center text-4xl shadow-md border-2 border-blue-200">
-                                🕊️
-                            </div>
+                    <div class="space-y-4">
+                        <!-- Input for Message -->
+                        <div>
+                            <label class="block text-sm font-semibold text-stone-500 mb-1">Entrada de Usuario:</label>
+                            <input type="text" id="userInput" placeholder="Escribe un mensaje aquí..." class="w-full p-3 border border-stone-300 rounded-lg focus:ring-2 focus:ring-indigo-300 outline-none transition" onkeypress="handleEnter(event)">
                         </div>
-                        <p class="text-sm font-bold text-blue-600">Mensajera de la Paz</p>
-                    </div>
 
-                    <!-- Visual List -->
-                    <div class="bg-white rounded-lg p-4 border-2 border-green-100 flex flex-col h-64 shadow-inner">
-                        <h3 class="font-bold text-green-600 text-xs uppercase mb-2">Muro de Acciones</h3>
-                        <div class="flex-grow overflow-y-auto inventory-scroll" id="inventory-list">
-                            <div class="text-slate-400 text-xs italic text-center mt-10">Muro vacío... ¡empecemos a sembrar!</div>
+                        <!-- Action Buttons -->
+                        <div class="grid grid-cols-2 gap-3">
+                            <button onclick="pressKeyA()" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-3 px-4 rounded-lg shadow transition flex items-center justify-center gap-2">
+                                <span>[ A ]</span> Escribir
+                            </button>
+                            <button onclick="pressKeyX()" class="bg-red-500 hover:bg-red-600 text-white font-bold py-3 px-4 rounded-lg shadow transition flex items-center justify-center gap-2">
+                                <span>[ X ]</span> Borrar
+                            </button>
+                            <button onclick="pressKeyC()" class="bg-orange-500 hover:bg-orange-600 text-white font-bold py-3 px-4 rounded-lg shadow transition flex items-center justify-center gap-2">
+                                <span>[ C ]</span> Limpiar
+                            </button>
+                            <button onclick="pressKeySpace()" class="bg-purple-500 hover:bg-purple-600 text-white font-bold py-3 px-4 rounded-lg shadow transition flex items-center justify-center gap-2">
+                                <span>[ Espacio ]</span> Contar
+                            </button>
                         </div>
+                        <button onclick="pressKeyB()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 px-4 rounded-lg shadow transition flex items-center justify-center gap-2">
+                            <span>[ B ]</span> Detector de Valores (Scan)
+                        </button>
                     </div>
                 </div>
 
-                <!-- Controls -->
-                <div class="mt-8 grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
-                    <div class="grid grid-cols-2 gap-2">
-                        <button onclick="handleKey('a')" class="bg-green-500 hover:bg-green-400 text-white font-bold py-3 rounded-lg shadow-md transition-all active:scale-95">
-                            (A) Acción +
-                        </button>
-                        <button onclick="handleKey('x')" class="bg-blue-400 hover:bg-blue-300 text-white font-bold py-3 rounded-lg shadow-md transition-all active:scale-95">
-                            (X) Resolver
-                        </button>
-                        <button onclick="handleKey('space')" class="bg-yellow-400 hover:bg-yellow-300 text-slate-800 font-bold py-3 rounded-lg shadow-md transition-all active:scale-95">
-                            (ESP) Estado
-                        </button>
-                        <button onclick="handleKey('b')" class="bg-purple-400 hover:bg-purple-300 text-white font-bold py-3 rounded-lg shadow-md transition-all active:scale-95">
-                            (B) Buscar
-                        </button>
+                <!-- Logic Flow Visualizer -->
+                <div class="bg-stone-100 p-6 rounded-xl border border-stone-200 flex-grow">
+                    <h3 class="font-bold text-lg text-stone-700 mb-3">🧠 Flujo Lógico en Tiempo Real</h3>
+                    <div id="logicTrace" class="space-y-2 text-sm font-mono bg-white p-4 rounded border border-stone-200 h-64 overflow-y-auto">
+                        <p class="text-stone-400 italic">Esperando interacción...</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- RIGHT COLUMN: Visualization & Data -->
+            <div class="lg:col-span-7 flex flex-col gap-6">
+                
+                <!-- The "Stage" (Visual Output) -->
+                <div class="bg-indigo-50 p-6 rounded-xl border border-indigo-100 relative min-h-[160px] flex flex-col items-center justify-center text-center">
+                    <div class="text-6xl mb-4">🕊️</div>
+                    <div id="characterSpeech" class="bg-white p-4 rounded-2xl shadow-lg border-2 border-indigo-200 text-indigo-900 font-medium max-w-md relative">
+                        "¡Hola! Pulsa 'A' para añadir un mensaje al Mural de la Paz."
+                        <div class="absolute w-4 h-4 bg-white border-b-2 border-r-2 border-indigo-200 transform rotate-45 -bottom-2 left-1/2 -translate-x-1/2"></div>
+                    </div>
+                </div>
+
+                <!-- Data Lists Container -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <!-- Mural List -->
+                    <div class="bg-white p-4 rounded-lg shadow border-2 border-blue-100">
+                        <div class="flex justify-between items-center mb-2">
+                            <h4 class="font-bold text-blue-800">📜 Mural de la Paz</h4>
+                            <span id="muralCount" class="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full">0/8</span>
+                        </div>
+                        <ul id="muralListDisplay" class="space-y-1 h-40 overflow-y-auto text-sm text-stone-700">
+                            <!-- Items will be injected here -->
+                            <li class="text-stone-400 italic text-xs p-2">Vacío...</li>
+                        </ul>
                     </div>
 
+                    <!-- Negative Actions List -->
+                    <div class="bg-white p-4 rounded-lg shadow border-2 border-red-100">
+                        <div class="flex justify-between items-center mb-2">
+                            <h4 class="font-bold text-red-800">🚫 Lista Negra (Oculta)</h4>
+                            <span class="bg-red-100 text-red-800 text-xs px-2 py-1 rounded-full">Filtro Activo</span>
+                        </div>
+                        <ul id="negativeListDisplay" class="space-y-1 h-40 overflow-y-auto text-sm text-stone-700 opacity-75">
+                            <!-- Items injected by JS -->
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Analytics Chart -->
+                <div class="bg-white p-6 rounded-xl shadow-md border border-stone-200">
+                    <h3 class="font-bold text-lg text-stone-700 mb-2">📊 Análisis de Moderación</h3>
+                    <p class="text-xs text-stone-500 mb-4">Resultados de tus interacciones con el algoritmo.</p>
+                    
                     <div class="chart-container">
-                        <canvas id="peaceChart"></canvas>
-                        <div class="absolute inset-0 flex items-center justify-center pointer-events-none">
-                            <span class="text-2xl">❤️</span>
-                        </div>
+                        <canvas id="statsChart"></canvas>
                     </div>
                 </div>
+            </div>
+        </div>
 
-                <div class="mt-4 p-3 bg-green-50 rounded-lg text-xs font-mono text-green-700 border border-green-200 h-12 overflow-hidden" id="console-log">
-                    > Iniciando proyecto de Convivencia...
+        <!-- Educational Content Section -->
+        <section class="bg-white rounded-2xl shadow-xl p-8 border-t-8 border-indigo-500">
+            <h2 class="text-3xl font-bold text-stone-800 mb-6">Guía de Implementación Paso a Paso</h2>
+            <p class="text-stone-600 mb-8">
+                A continuación encontrarás el desglose teórico de lo que acabas de experimentar en el simulador. 
+                Utiliza estos bloques de referencia para construir tu proyecto real en Scratch.
+            </p>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-12">
+                
+                <!-- Step 1 & 2 -->
+                <div class="space-y-8">
+                    <article class="prose prose-stone">
+                        <h3 class="text-xl font-bold text-indigo-600 flex items-center gap-2">
+                            <span class="bg-indigo-100 text-indigo-700 w-8 h-8 rounded-full flex items-center justify-center text-sm">1</span>
+                            Configuración Inicial
+                        </h3>
+                        <p>Antes de empezar, necesitamos nuestros contenedores de datos.</p>
+                        <ul class="list-disc pl-5 space-y-2 text-sm">
+                            <li>Crea la lista <strong>Mural de la Paz</strong> (Visible).</li>
+                            <li>Crea la lista <strong>Acciones Negativas</strong> (Oculta).</li>
+                            <li><strong>Al presionar Bandera Verde:</strong> Inicializa la lista negativa con palabras prohibidas (Guerra, Odio, etc.) para asegurar que el filtro funcione desde el inicio.</li>
+                        </ul>
+                    </article>
+
+                    <article class="prose prose-stone">
+                        <h3 class="text-xl font-bold text-indigo-600 flex items-center gap-2">
+                            <span class="bg-indigo-100 text-indigo-700 w-8 h-8 rounded-full flex items-center justify-center text-sm">2</span>
+                            Lógica de Escritura (Tecla A)
+                        </h3>
+                        <p>Este es el cerebro del mural. Sigue este orden de chequeo:</p>
+                        <div class="bg-stone-50 p-4 rounded-lg border-l-4 border-blue-400 text-sm font-mono">
+                            SI (respuesta = "Guerra") ENTONCES<br>
+                            &nbsp;&nbsp;Transformar a "Paz"<br>
+                            SI NO, SI (ListaNegativa contiene respuesta) ENTONCES<br>
+                            &nbsp;&nbsp;Error: "Palabra no permitida"<br>
+                            SI NO, SI (Longitud Mural < 8) ENTONCES<br>
+                            &nbsp;&nbsp;Añadir a Mural<br>
+                            SI NO<br>
+                            &nbsp;&nbsp;Error: "Mural Lleno"
+                        </div>
+                    </article>
+                </div>
+
+                <!-- Step 3, 4 & 5 -->
+                <div class="space-y-8">
+                    <article class="prose prose-stone">
+                        <h3 class="text-xl font-bold text-indigo-600 flex items-center gap-2">
+                            <span class="bg-indigo-100 text-indigo-700 w-8 h-8 rounded-full flex items-center justify-center text-sm">3</span>
+                            Gestión y Limpieza (Teclas X, C, Espacio)
+                        </h3>
+                        <p>Herramientas para mantener el mural ordenado.</p>
+                        <ul class="list-disc pl-5 space-y-2 text-sm">
+                            <li><strong>Tecla X (Borrar):</strong> Pide un número y usa el bloque <code>eliminar (respuesta) de Mural</code>.</li>
+                            <li><strong>Tecla C (Limpiar):</strong> Usa el bloque <code>eliminar todos de Mural</code> para reiniciar.</li>
+                            <li><strong>Espacio (Contar):</strong> Usa el bloque operador <code>unir</code> para combinar texto con el bloque <code>longitud de Mural</code>.</li>
+                        </ul>
+                    </article>
+
+                    <article class="prose prose-stone">
+                        <h3 class="text-xl font-bold text-emerald-600 flex items-center gap-2">
+                            <span class="bg-emerald-100 text-emerald-700 w-8 h-8 rounded-full flex items-center justify-center text-sm">4</span>
+                            Detector de Valores (Tecla B)
+                        </h3>
+                        <p>Un bucle de auditoría para seguridad extra.</p>
+                        <div class="bg-stone-50 p-4 rounded-lg border-l-4 border-emerald-400 text-sm font-mono">
+                            Fijar variable [índice] a 1<br>
+                            REPETIR (longitud de Mural) veces<br>
+                            &nbsp;&nbsp;SI (ListaNegativa contiene item [índice])<br>
+                            &nbsp;&nbsp;&nbsp;&nbsp;Alertar "Conflicto detectado"<br>
+                            &nbsp;&nbsp;Cambiar [índice] por 1
+                        </div>
+                    </article>
                 </div>
 
             </div>
         </section>
+
+        <footer class="text-center mt-12 text-stone-400 text-sm pb-8">
+            <p>Generado a partir de la Guía del Mural de la Paz. Diseñado para el aprendizaje interactivo.</p>
+        </footer>
+
     </div>
 
+    <!-- Application Logic -->
     <script>
+        // --- DATA STATE ---
         const gameState = {
-            inventory: [],
-            maxCapacity: 10,
-            peaceActions: ["Escuchar", "Compartir", "Pedir perdón", "Dialogar", "Sonreír", "Ayudar", "Respetar", "Incluir"]
+            mural: [],
+            negativeList: ["Guerra", "Odio", "Insulto", "Pelea", "Violencia"],
+            maxMuralSize: 8,
+            stats: {
+                added: 0,
+                blocked: 0,
+                transformed: 0,
+                deleted: 0
+            }
         };
 
-        let peaceChart;
+        // --- CHART INITIALIZATION ---
+        let statsChart;
 
         function initChart() {
-            const ctx = document.getElementById('peaceChart').getContext('2d');
-            peaceChart = new Chart(ctx, {
-                type: 'doughnut',
+            const ctx = document.getElementById('statsChart').getContext('2d');
+            statsChart = new Chart(ctx, {
+                type: 'bar',
                 data: {
-                    labels: ['Armonía', 'Espacio para mejorar'],
+                    labels: ['Aceptados', 'Bloqueados', 'Transformados', 'Borrados'],
                     datasets: [{
-                        data: [0, 10],
-                        backgroundColor: ['#22c55e', '#f0fdf4'],
-                        borderWidth: 0
+                        label: 'Interacciones',
+                        data: [0, 0, 0, 0],
+                        backgroundColor: [
+                            'rgba(34, 197, 94, 0.6)',  // Green - Accepted
+                            'rgba(239, 68, 68, 0.6)',  // Red - Blocked
+                            'rgba(234, 179, 8, 0.6)',  // Yellow - Transformed
+                            'rgba(107, 114, 128, 0.6)' // Gray - Deleted
+                        ],
+                        borderColor: [
+                            'rgb(34, 197, 94)',
+                            'rgb(239, 68, 68)',
+                            'rgb(234, 179, 8)',
+                            'rgb(107, 114, 128)'
+                        ],
+                        borderWidth: 1
                     }]
                 },
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
-                    cutout: '80%',
-                    plugins: { legend: { display: false } }
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: { precision: 0 }
+                        }
+                    },
+                    plugins: {
+                        legend: { display: false }
+                    }
                 }
             });
         }
 
+        // --- UI UPDATE FUNCTIONS ---
+
         function updateUI() {
-            const listEl = document.getElementById('inventory-list');
-            listEl.innerHTML = '';
+            // Update Mural List
+            const muralListEl = document.getElementById('muralListDisplay');
+            const countEl = document.getElementById('muralCount');
             
-            if (gameState.inventory.length === 0) {
-                listEl.innerHTML = '<div class="text-slate-400 text-xs italic text-center mt-10">Muro vacío... ¡empecemos a sembrar!</div>';
+            muralListEl.innerHTML = '';
+            if (gameState.mural.length === 0) {
+                muralListEl.innerHTML = '<li class="text-stone-400 italic text-xs p-2">Vacío...</li>';
             } else {
-                gameState.inventory.forEach((item, index) => {
-                    const div = document.createElement('div');
-                    div.className = 'bg-green-50 p-2 mb-1 rounded text-xs text-green-800 flex items-center border-l-4 border-green-400';
-                    div.innerHTML = `<span class="mr-2">✨</span> <span>${item}</span>`;
-                    listEl.appendChild(div);
+                gameState.mural.forEach((msg, index) => {
+                    const li = document.createElement('li');
+                    li.className = 'p-2 bg-blue-50 rounded border border-blue-100 text-blue-900 flex justify-between animate-[fadeIn_0.3s_ease-out]';
+                    li.innerHTML = `<span>${index + 1}. ${msg}</span>`;
+                    muralListEl.appendChild(li);
                 });
             }
+            countEl.textContent = `${gameState.mural.length}/${gameState.maxMuralSize}`;
 
-            const current = gameState.inventory.length;
-            peaceChart.data.datasets[0].data = [current, Math.max(0, 10 - current)];
-            peaceChart.update();
+            // Update Chart
+            statsChart.data.datasets[0].data = [
+                gameState.stats.added,
+                gameState.stats.blocked,
+                gameState.stats.transformed,
+                gameState.stats.deleted
+            ];
+            statsChart.update();
         }
 
-        function characterSay(text) {
-            const bubble = document.getElementById('game-bubble');
-            bubble.innerText = text;
-            bubble.style.opacity = '1';
-            setTimeout(() => bubble.style.opacity = '0', 3000);
+        function initNegativeList() {
+            const listEl = document.getElementById('negativeListDisplay');
+            listEl.innerHTML = '';
+            gameState.negativeList.forEach(word => {
+                const li = document.createElement('li');
+                li.className = 'px-2 py-1 text-xs bg-red-50 text-red-700 rounded border border-red-100 inline-block mr-1 mb-1';
+                li.textContent = word;
+                listEl.appendChild(li);
+            });
+        }
+
+        function setCharacterSpeech(text, type = 'neutral') {
+            const bubble = document.getElementById('characterSpeech');
+            bubble.textContent = text;
             
-            const log = document.getElementById('console-log');
-            log.innerHTML = `> ${text}<br>` + log.innerHTML;
+            // Reset classes
+            bubble.className = 'p-4 rounded-2xl shadow-lg border-2 max-w-md relative transition-colors duration-300';
+            
+            if (type === 'error') {
+                bubble.classList.add('bg-red-50', 'border-red-200', 'text-red-900');
+            } else if (type === 'success') {
+                bubble.classList.add('bg-green-50', 'border-green-200', 'text-green-900');
+            } else if (type === 'magic') {
+                bubble.classList.add('bg-yellow-50', 'border-yellow-200', 'text-yellow-900');
+            } else {
+                bubble.classList.add('bg-white', 'border-indigo-200', 'text-indigo-900');
+            }
+            
+            // Re-add tail
+            const tail = document.createElement('div');
+            tail.className = `absolute w-4 h-4 border-b-2 border-r-2 transform rotate-45 -bottom-2 left-1/2 -translate-x-1/2 ${type === 'error' ? 'bg-red-50 border-red-200' : type === 'success' ? 'bg-green-50 border-green-200' : type === 'magic' ? 'bg-yellow-50 border-yellow-200' : 'bg-white border-indigo-200'}`;
+            bubble.appendChild(tail);
         }
 
-        async function handleKey(key) {
-            switch(key) {
-                case 'a':
-                    highlightStep(2);
-                    let action = prompt("¿Qué acción positiva quieres añadir al muro?");
-                    if (action) {
-                        gameState.inventory.push(action);
-                        characterSay(`¡Genial! "${action}" nos hace mejores.`);
-                        updateUI();
-                    }
-                    break;
-                case 'x':
-                    highlightStep(3);
-                    if (gameState.inventory.length === 0) {
-                        characterSay("No hay acciones en el muro aún.");
+        function logTrace(message, type = 'info') {
+            const traceContainer = document.getElementById('logicTrace');
+            const p = document.createElement('p');
+            p.className = `scratch-block p-2 rounded mb-1 text-xs ${type === 'cmd' ? 'bg-yellow-50 border-yellow-400' : type === 'check' ? 'bg-blue-50 border-blue-400' : type === 'result' ? 'bg-stone-50 border-stone-400 font-bold' : ''}`;
+            p.textContent = `> ${message}`;
+            traceContainer.prepend(p);
+        }
+
+        function getInput() {
+            const input = document.getElementById('userInput');
+            const val = input.value.trim();
+            input.value = '';
+            return val;
+        }
+
+        function handleEnter(e) {
+            if (e.key === 'Enter') pressKeyA();
+        }
+
+        // --- GAME LOGIC FUNCTIONS ---
+
+        function pressKeyA() {
+            const input = getInput();
+            if (!input) {
+                setCharacterSpeech("Por favor, escribe un mensaje primero.", "neutral");
+                return;
+            }
+
+            logTrace(`Tecla A presionada con: "${input}"`, 'cmd');
+
+            // 1. Transformer Logic
+            let finalMessage = input;
+            let wasTransformed = false;
+            
+            // Normalizing for case-insensitive check
+            const inputLower = input.toLowerCase();
+
+            if (inputLower === 'guerra') {
+                logTrace(`⚡ Transformador Activado: Guerra -> Paz`, 'check');
+                finalMessage = "Paz";
+                wasTransformed = true;
+            } else if (inputLower === 'odio') {
+                logTrace(`⚡ Transformador Activado: Odio -> Amor`, 'check');
+                finalMessage = "Amor";
+                wasTransformed = true;
+            }
+
+            // 2. Negative Filter Logic
+            // Check if any word in the negative list is in the input (simple includes check)
+            const isNegative = gameState.negativeList.some(badWord => finalMessage.toLowerCase().includes(badWord.toLowerCase()));
+
+            if (isNegative) {
+                logTrace(`❌ Filtro: "${finalMessage}" detectado en Lista Negra`, 'check');
+                setCharacterSpeech("¡Esa palabra no construye paz! Intenta con algo positivo.", "error");
+                gameState.stats.blocked++;
+            } else {
+                // 3. Space Logic
+                if (gameState.mural.length < gameState.maxMuralSize) {
+                    gameState.mural.push(finalMessage);
+                    
+                    if (wasTransformed) {
+                        setCharacterSpeech(`¡Magia! He cambiado tu mensaje negativo por "${finalMessage}" y lo he añadido.`, "magic");
+                        gameState.stats.transformed++;
                     } else {
-                        let idx = prompt(`¿Qué número de acción usamos para resolver el conflicto? (1-${gameState.inventory.length})`);
-                        let i = parseInt(idx);
-                        if (!isNaN(i) && i > 0 && i <= gameState.inventory.length) {
-                            let item = gameState.inventory.splice(i-1, 1);
-                            characterSay(`Conflicto resuelto usando: ${item}`);
-                            updateUI();
-                        }
+                        setCharacterSpeech(`¡Mensaje "${finalMessage}" añadido con éxito!`, "success");
+                        gameState.stats.added++;
                     }
-                    break;
-                case 'space':
-                    highlightStep(1);
-                    characterSay(`Nuestro muro tiene ${gameState.inventory.length} semillas de paz.`);
-                    break;
-                case 'b':
-                    highlightStep(4);
-                    let search = prompt("¿Qué valor buscas en el muro?");
-                    if (search) {
-                        const has = gameState.inventory.some(v => v.toLowerCase().includes(search.toLowerCase()));
-                        characterSay(has ? `¡Sí! ${search} está presente.` : `Aún no tenemos ${search}.`);
-                    }
-                    break;
+                    logTrace(`✅ Mensaje "${finalMessage}" añadido al índice ${gameState.mural.length}`, 'result');
+                } else {
+                    logTrace(`⚠️ Filtro: Mural lleno (${gameState.mural.length}/8)`, 'check');
+                    setCharacterSpeech("¡El mural está completo! Debes quitar un mensaje viejo.", "error");
+                }
+            }
+            updateUI();
+        }
+
+        function pressKeyX() {
+            if (gameState.mural.length === 0) {
+                setCharacterSpeech("El mural ya está vacío.", "neutral");
+                return;
+            }
+
+            // Simulate asking for number (Prompt)
+            // For UI simplicity, we'll try to get it from input box, or prompt user
+            let indexStr = prompt(`¿Qué número de mensaje quieres retirar? (1-${gameState.mural.length})`);
+            
+            if (indexStr) {
+                const index = parseInt(indexStr);
+                if (index > 0 && index <= gameState.mural.length) {
+                    const removed = gameState.mural.splice(index - 1, 1);
+                    logTrace(`🗑️ Elemento ${index} ("${removed}") eliminado`, 'cmd');
+                    setCharacterSpeech(`He retirado el mensaje: "${removed}"`, "neutral");
+                    gameState.stats.deleted++;
+                } else {
+                    logTrace(`⚠️ Intento de borrar índice inválido: ${indexStr}`, 'check');
+                    setCharacterSpeech("Ese número no existe en el mural.", "error");
+                }
+            }
+            updateUI();
+        }
+
+        function pressKeyC() {
+            if (confirm("¿Seguro que quieres borrar TODO el mural?")) {
+                const count = gameState.mural.length;
+                gameState.mural = [];
+                logTrace(`🧹 Mural limpiado (${count} mensajes borrados)`, 'cmd');
+                setCharacterSpeech("El mural está listo para nuevas ideas.", "neutral");
+                gameState.stats.deleted += count;
+                updateUI();
             }
         }
 
-        function highlightStep(s) {
-            document.querySelectorAll('.step-card').forEach(c => c.classList.remove('active'));
-            document.getElementById(`step-${s}`).classList.add('active');
+        function pressKeySpace() {
+            const msg = `Tenemos ${gameState.mural.length} mensajes de paz.`;
+            logTrace(`ℹ️ Contando mensajes: ${gameState.mural.length}`, 'cmd');
+            setCharacterSpeech(msg, "neutral");
         }
 
-        window.onload = () => { initChart(); updateUI(); };
+        function pressKeyB() {
+            logTrace(`🔍 Iniciando Escaneo de Valores...`, 'cmd');
+            let foundConflict = false;
+            
+            // Simulation of the loop logic
+            gameState.mural.forEach((msg, idx) => {
+                const isNegative = gameState.negativeList.some(badWord => msg.toLowerCase().includes(badWord.toLowerCase()));
+                if (isNegative) {
+                    logTrace(`⚠️ Conflicto encontrado en pos ${idx + 1}: "${msg}"`, 'check');
+                    foundConflict = true;
+                }
+            });
+
+            if (foundConflict) {
+                setCharacterSpeech("¡Atención! He detectado un conflicto en el mural.", "error");
+            } else {
+                logTrace(`✅ Escaneo completado. Todo limpio.`, 'result');
+                setCharacterSpeech("He analizado el mural y todo parece correcto.", "success");
+            }
+        }
+
+        // --- INITIALIZATION ---
+        window.onload = function() {
+            initChart();
+            initNegativeList();
+            updateUI();
+            logTrace("Sistema iniciado. Reglas cargadas.", 'result');
+        };
+
     </script>
 </body>
 </html>
