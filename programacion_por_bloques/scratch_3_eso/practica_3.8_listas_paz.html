@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simulador Scratch: Acciones por la Paz</title>
+    <script src="/CYR/assets/tailwind.global.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Nunito', sans-serif;
+            background-color: #f0fdf4; /* Light Green background for Peace theme */
+            color: #166534;
+        }
+        
+        .scratch-block {
+            padding: 8px 12px;
+            border-radius: 4px;
+            color: white;
+            font-weight: bold;
+            display: inline-block;
+            margin: 2px 0;
+            box-shadow: 0 2px 0 rgba(0,0,0,0.2);
+            font-size: 0.9rem;
+            cursor: default;
+        }
+        .block-event { background-color: #FFBF00; border: 1px solid #E6AC00; }
+        .block-control { background-color: #FFAB19; border: 1px solid #CF8B17; }
+        .block-sensing { background-color: #5CB1D6; border: 1px solid #2E8EB8; }
+        .block-list { background-color: #FF661A; border: 1px solid #D94D0C; }
+        .block-looks { background-color: #9966FF; border: 1px solid #774DCB; }
+        .block-operator { background-color: #59C059; border: 1px solid #389438; }
+
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 300px; 
+            margin: auto;
+            height: 250px;
+        }
+
+        .inventory-scroll::-webkit-scrollbar { width: 8px; }
+        .inventory-scroll::-webkit-scrollbar-track { background: #f0fdf4; }
+        .inventory-scroll::-webkit-scrollbar-thumb { background: #bbf7d0; border-radius: 4px; }
+
+        .step-card {
+            transition: all 0.3s ease;
+            border-left: 4px solid transparent;
+        }
+        .step-card.active {
+            border-left: 4px solid #22c55e;
+            background-color: #f0fdf4;
+        }
+    </style>
+    <!-- Chosen Palette: Peace & Non-Violence (Green, Soft Blue, White Dove tones) -->
+    <!-- Application Structure Plan: Adaptive dashboard layout. The guide moves from a "Survival Inventory" to a "Peace Toolkit". Each step is re-contextualized for empathy and conflict resolution. The simulator uses a "Messenger Dove" character and heart-based capacity visualization. -->
+    <!-- Visualization & Content Choices: 
+         1. Heart Doughnut Chart: Represents "Harmonía Escolar". Goal: Change.
+         2. Peace Icons (Canvas/Emoji): Replaces RPG icons to set the theme.
+         3. Action-based logic: "Add weapon" becomes "Add positive action". 
+    -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+</head>
+<body class="p-4 md:p-8">
+
+    <header class="max-w-6xl mx-auto mb-8 text-center">
+        <h1 class="text-3xl md:text-4xl font-extrabold text-green-800 mb-2">
+            🕊️ Scratch por la Paz y la Convivencia
+        </h1>
+        <p class="text-lg text-green-700 max-w-2xl mx-auto">
+            Transforma la lógica de listas en una herramienta para mejorar tu centro educativo.
+            Recoge acciones positivas y construye un entorno sin violencia.
+        </p>
+    </header>
+
+    <div class="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-8">
+
+        <!-- LEFT COLUMN: The Pedagogy -->
+        <section class="space-y-6">
+            <div class="bg-white p-6 rounded-xl shadow-sm border border-green-100">
+                <h2 class="text-xl font-bold text-green-800 mb-4 flex items-center">
+                    <span class="bg-green-100 text-green-600 p-2 rounded-lg mr-3">1</span>
+                    Reto: El Muro de la Convivencia
+                </h2>
+                
+                <!-- Step 1: Concept -->
+                <div class="step-card active bg-white p-4 rounded-lg border border-slate-100 mb-4 cursor-pointer" onclick="highlightStep(1)" id="step-1">
+                    <h3 class="font-bold text-lg text-green-700 mb-2">Paso 1: La Lista de Acciones</h3>
+                    <p class="text-slate-600 text-sm mb-3">Nuestra lista no guarda "objetos", guarda <strong>acciones</strong> que ayudan a los demás.</p>
+                    <div class="flex flex-wrap gap-2">
+                        <span class="scratch-block block-list">Crear lista [Muro de Paz]</span>
+                    </div>
+                </div>
+
+                <!-- Step 2: Positive Actions (Key A) -->
+                <div class="step-card bg-white p-4 rounded-lg border border-slate-100 mb-4 cursor-pointer" onclick="highlightStep(2)" id="step-2">
+                    <h3 class="font-bold text-lg text-green-700 mb-2">Paso 2: Sembrar Paz (Tecla A)</h3>
+                    <p class="text-slate-600 text-sm mb-3">Pregunta por una acción positiva (ej. "Ayudar a un compañero") y añádela.</p>
+                    <div class="space-y-1">
+                        <div><span class="scratch-block block-event">al presionar tecla [a]</span></div>
+                        <div><span class="scratch-block block-sensing">preguntar [¿Qué acción de paz has visto hoy?]</span></div>
+                        <div class="pl-4 border-l-2 border-green-300">
+                            <span class="scratch-block block-list">añadir (respuesta) a [Muro de Paz]</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Step 3: Conflict Resolution (Key X) -->
+                <div class="step-card bg-white p-4 rounded-lg border border-slate-100 mb-4 cursor-pointer" onclick="highlightStep(3)" id="step-3">
+                    <h3 class="font-bold text-lg text-green-700 mb-2">Paso 3: Resolver Conflicto (Tecla X)</h3>
+                    <p class="text-slate-600 text-sm mb-3">Cuando resolvemos un problema, "usamos" una de nuestras herramientas de paz de la lista.</p>
+                    <div class="space-y-1">
+                        <div><span class="scratch-block block-sensing">preguntar [¿Qué acción aplicamos para resolverlo?]</span></div>
+                        <div><span class="scratch-block block-list">eliminar (respuesta) de [Muro de Paz]</span></div>
+                    </div>
+                </div>
+
+                <!-- Step 4: Search Empathy (Key B) -->
+                <div class="step-card bg-white p-4 rounded-lg border border-slate-100 mb-4 cursor-pointer" onclick="highlightStep(4)" id="step-4">
+                    <h3 class="font-bold text-lg text-green-700 mb-2">Paso 4: Buscar Empatía (Tecla B)</h3>
+                    <p class="text-slate-600 text-sm mb-3">Comprueba si un valor (ej. "Respeto") ya está presente en nuestro muro.</p>
+                    <div class="space-y-1">
+                        <div><span class="scratch-block block-control">si &lt; [Muro de Paz] contiene [Respeto] ? &gt;</span></div>
+                        <span class="scratch-block block-looks ml-4">decir [¡Nuestro centro es un lugar seguro!]</span>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- RIGHT COLUMN: The Interactive Peace Simulator -->
+        <section class="space-y-6 sticky top-4">
+            <div class="bg-white p-6 rounded-xl shadow-xl border-4 border-green-200 relative overflow-hidden">
+                
+                <h2 class="text-xl font-bold text-green-800 mb-6 flex items-center">
+                    <span class="bg-green-500 text-white p-2 rounded-lg mr-3">2</span>
+                    Simulador de Convivencia
+                </h2>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    
+                    <!-- Avatar Area -->
+                    <div class="flex flex-col items-center justify-center space-y-4 bg-blue-50 rounded-xl p-4">
+                        <div class="relative">
+                            <div id="game-bubble" class="absolute -top-16 left-1/2 transform -translate-x-1/2 bg-white text-green-800 text-xs font-bold py-2 px-4 rounded-lg shadow-md w-40 text-center opacity-0 transition-opacity">
+                                ¡Haz una buena acción!
+                            </div>
+                            <div class="w-20 h-20 bg-white rounded-full flex items-center justify-center text-4xl shadow-md border-2 border-blue-200">
+                                🕊️
+                            </div>
+                        </div>
+                        <p class="text-sm font-bold text-blue-600">Mensajera de la Paz</p>
+                    </div>
+
+                    <!-- Visual List -->
+                    <div class="bg-white rounded-lg p-4 border-2 border-green-100 flex flex-col h-64 shadow-inner">
+                        <h3 class="font-bold text-green-600 text-xs uppercase mb-2">Muro de Acciones</h3>
+                        <div class="flex-grow overflow-y-auto inventory-scroll" id="inventory-list">
+                            <div class="text-slate-400 text-xs italic text-center mt-10">Muro vacío... ¡empecemos a sembrar!</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Controls -->
+                <div class="mt-8 grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
+                    <div class="grid grid-cols-2 gap-2">
+                        <button onclick="handleKey('a')" class="bg-green-500 hover:bg-green-400 text-white font-bold py-3 rounded-lg shadow-md transition-all active:scale-95">
+                            (A) Acción +
+                        </button>
+                        <button onclick="handleKey('x')" class="bg-blue-400 hover:bg-blue-300 text-white font-bold py-3 rounded-lg shadow-md transition-all active:scale-95">
+                            (X) Resolver
+                        </button>
+                        <button onclick="handleKey('space')" class="bg-yellow-400 hover:bg-yellow-300 text-slate-800 font-bold py-3 rounded-lg shadow-md transition-all active:scale-95">
+                            (ESP) Estado
+                        </button>
+                        <button onclick="handleKey('b')" class="bg-purple-400 hover:bg-purple-300 text-white font-bold py-3 rounded-lg shadow-md transition-all active:scale-95">
+                            (B) Buscar
+                        </button>
+                    </div>
+
+                    <div class="chart-container">
+                        <canvas id="peaceChart"></canvas>
+                        <div class="absolute inset-0 flex items-center justify-center pointer-events-none">
+                            <span class="text-2xl">❤️</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-4 p-3 bg-green-50 rounded-lg text-xs font-mono text-green-700 border border-green-200 h-12 overflow-hidden" id="console-log">
+                    > Iniciando proyecto de Convivencia...
+                </div>
+
+            </div>
+        </section>
+    </div>
+
+    <script>
+        const gameState = {
+            inventory: [],
+            maxCapacity: 10,
+            peaceActions: ["Escuchar", "Compartir", "Pedir perdón", "Dialogar", "Sonreír", "Ayudar", "Respetar", "Incluir"]
+        };
+
+        let peaceChart;
+
+        function initChart() {
+            const ctx = document.getElementById('peaceChart').getContext('2d');
+            peaceChart = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Armonía', 'Espacio para mejorar'],
+                    datasets: [{
+                        data: [0, 10],
+                        backgroundColor: ['#22c55e', '#f0fdf4'],
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    cutout: '80%',
+                    plugins: { legend: { display: false } }
+                }
+            });
+        }
+
+        function updateUI() {
+            const listEl = document.getElementById('inventory-list');
+            listEl.innerHTML = '';
+            
+            if (gameState.inventory.length === 0) {
+                listEl.innerHTML = '<div class="text-slate-400 text-xs italic text-center mt-10">Muro vacío... ¡empecemos a sembrar!</div>';
+            } else {
+                gameState.inventory.forEach((item, index) => {
+                    const div = document.createElement('div');
+                    div.className = 'bg-green-50 p-2 mb-1 rounded text-xs text-green-800 flex items-center border-l-4 border-green-400';
+                    div.innerHTML = `<span class="mr-2">✨</span> <span>${item}</span>`;
+                    listEl.appendChild(div);
+                });
+            }
+
+            const current = gameState.inventory.length;
+            peaceChart.data.datasets[0].data = [current, Math.max(0, 10 - current)];
+            peaceChart.update();
+        }
+
+        function characterSay(text) {
+            const bubble = document.getElementById('game-bubble');
+            bubble.innerText = text;
+            bubble.style.opacity = '1';
+            setTimeout(() => bubble.style.opacity = '0', 3000);
+            
+            const log = document.getElementById('console-log');
+            log.innerHTML = `> ${text}<br>` + log.innerHTML;
+        }
+
+        async function handleKey(key) {
+            switch(key) {
+                case 'a':
+                    highlightStep(2);
+                    let action = prompt("¿Qué acción positiva quieres añadir al muro?");
+                    if (action) {
+                        gameState.inventory.push(action);
+                        characterSay(`¡Genial! "${action}" nos hace mejores.`);
+                        updateUI();
+                    }
+                    break;
+                case 'x':
+                    highlightStep(3);
+                    if (gameState.inventory.length === 0) {
+                        characterSay("No hay acciones en el muro aún.");
+                    } else {
+                        let idx = prompt(`¿Qué número de acción usamos para resolver el conflicto? (1-${gameState.inventory.length})`);
+                        let i = parseInt(idx);
+                        if (!isNaN(i) && i > 0 && i <= gameState.inventory.length) {
+                            let item = gameState.inventory.splice(i-1, 1);
+                            characterSay(`Conflicto resuelto usando: ${item}`);
+                            updateUI();
+                        }
+                    }
+                    break;
+                case 'space':
+                    highlightStep(1);
+                    characterSay(`Nuestro muro tiene ${gameState.inventory.length} semillas de paz.`);
+                    break;
+                case 'b':
+                    highlightStep(4);
+                    let search = prompt("¿Qué valor buscas en el muro?");
+                    if (search) {
+                        const has = gameState.inventory.some(v => v.toLowerCase().includes(search.toLowerCase()));
+                        characterSay(has ? `¡Sí! ${search} está presente.` : `Aún no tenemos ${search}.`);
+                    }
+                    break;
+            }
+        }
+
+        function highlightStep(s) {
+            document.querySelectorAll('.step-card').forEach(c => c.classList.remove('active'));
+            document.getElementById(`step-${s}`).classList.add('active');
+        }
+
+        window.onload = () => { initChart(); updateUI(); };
+    </script>
+</body>
+</html>
