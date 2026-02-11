@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Desafíos Bebras - Pensamiento Computacional</title>
+    <script src="/CYR/assets/tailwind.global.js"></script>
+    <style>
+        .card {
+            transition: transform 0.2s;
+        }
+        .card:hover {
+            transform: translateY(-5px);
+        }
+        .correct {
+            border-color: #10b981 !important;
+            background-color: #ecfdf5;
+        }
+        .incorrect {
+            border-color: #ef4444 !important;
+            background-color: #fef2f2;
+        }
+    </style>
+</head>
+<body class="bg-slate-50 min-h-screen font-sans text-slate-900">
+
+    <header class="bg-indigo-600 text-white py-8 px-4 shadow-lg mb-8">
+        <div class="max-w-4xl mx-auto text-center">
+            <h1 class="text-3xl md:text-4xl font-bold mb-2">Desafíos de Pensamiento Computacional</h1>
+            <p class="text-indigo-100 italic">Nivel Avanzado - Inspirado en Bebras.uk</p>
+        </div>
+    </header>
+
+    <main class="max-w-4xl mx-auto px-4 pb-20">
+        
+        <!-- Marcador de Progreso -->
+        <div id="status-bar" class="sticky top-4 z-10 bg-white/80 backdrop-blur-md p-4 rounded-xl shadow-sm border border-slate-200 mb-8 flex justify-between items-center">
+            <div class="flex items-center gap-4">
+                <span class="text-sm font-semibold text-slate-500 uppercase tracking-wider">Puntuación:</span>
+                <span id="score" class="text-2xl font-bold text-indigo-600">0</span>
+            </div>
+            <div id="progress-text" class="text-sm font-medium text-slate-600">Completado: 0/4</div>
+        </div>
+
+        <!-- Desafío 1 -->
+        <section class="card bg-white p-6 rounded-2xl shadow-sm border border-slate-200 mb-8" id="q1-container">
+            <div class="flex items-start gap-4 mb-4">
+                <span class="bg-green-100 text-green-700 text-xs font-bold px-2 py-1 rounded uppercase">Fácil</span>
+                <h2 class="text-xl font-bold">1. El Robot Artista</h2>
+            </div>
+            <p class="mb-6 text-slate-700">
+                Nuestro robot es un artista, avanza por las casillas pintando flores siguiendo estos comandos:
+                <br><strong>[Avanza una casilla]</strong>, <strong>[Pinta una flor]</strong>, <strong>[Pinta tres flores]</strong>.
+            </p>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
+                <div class="bg-slate-100 p-4 rounded-lg text-center border-2 border-dashed border-slate-300">
+                    <p class="text-sm font-mono mb-2"></p>
+                    <div class="flex justify-center gap-2">
+                        <div class="w-12 h-12 bg-white rounded border border-slate-300 flex items-center justify-center">🌸</div>
+                        <div class="w-12 h-12 bg-white rounded border border-slate-300 flex items-center justify-center">🌸🌸🌸</div>
+                        <div class="w-12 h-12 bg-white rounded border border-slate-300 flex items-center justify-center">🌸</div>
+                    </div>
+                </div>
+                <div>
+                    <label class="block mb-2 font-medium">¿Cuál es el mayor número de flores dibujadas en una sola pieza por el robot?</label>
+                    <div class="space-y-2">
+                        <button onclick="checkAnswer(1, 1, this)" class="w-full text-left p-3 rounded-lg border border-slate-200 hover:bg-slate-50 transition">A) 1 flor</button>
+                        <button onclick="checkAnswer(1, 3, this)" class="w-full text-left p-3 rounded-lg border border-slate-200 hover:bg-slate-50 transition">B) 3 flores</button>
+                        <button onclick="checkAnswer(1, 4, this)" class="w-full text-left p-3 rounded-lg border border-slate-200 hover:bg-slate-50 transition">C) 4 flores</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Desafío 2 -->
+        <section class="card bg-white p-6 rounded-2xl shadow-sm border border-slate-200 mb-8" id="q2-container">
+            <div class="flex items-start gap-4 mb-4">
+                <span class="bg-orange-100 text-orange-700 text-xs font-bold px-2 py-1 rounded uppercase">Medio</span>
+                <h2 class="text-xl font-bold">2. La Cabaña del Castor</h2>
+            </div>
+            <p class="mb-4 text-slate-700">
+                Los castores usan coordenadas (Fila, Columna). El <strong>puente</strong> está en la posición <strong>(5, 6)</strong>.
+                La cabaña está ubicada 4 puntos debajo del puente y 2 puntos a la derecha.
+            </p>
+            <div class="bg-slate-900 text-white p-4 rounded-lg font-mono text-sm mb-6">
+                Fila: 5 + 4 = ? <br>
+                Columna: 6 + 2 = ?
+            </div>
+            <div>
+                <label class="block mb-2 font-medium">¿Cuál es la ubicación de la cabaña?</label>
+                <div class="grid grid-cols-2 gap-3">
+                    <button onclick="checkAnswer(2, '9,8', this)" class="p-3 rounded-lg border border-slate-200 hover:bg-slate-50 transition">(9, 8)</button>
+                    <button onclick="checkAnswer(2, '1,4', this)" class="p-3 rounded-lg border border-slate-200 hover:bg-slate-50 transition">(1, 4)</button>
+                    <button onclick="checkAnswer(2, '7,10', this)" class="p-3 rounded-lg border border-slate-200 hover:bg-slate-50 transition">(7, 10)</button>
+                    <button onclick="checkAnswer(2, '9,4', this)" class="p-3 rounded-lg border border-slate-200 hover:bg-slate-50 transition">(9, 4)</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Desafío 3 -->
+        <section class="card bg-white p-6 rounded-2xl shadow-sm border border-slate-200 mb-8" id="q3-container">
+            <div class="flex items-start gap-4 mb-4">
+                <span class="bg-orange-100 text-orange-700 text-xs font-bold px-2 py-1 rounded uppercase">Medio</span>
+                <h2 class="text-xl font-bold">3. El Canguro Saltarín</h2>
+            </div>
+            <p class="mb-4 text-slate-700">
+                Un canguro sigue estas reglas:
+                1. Salta 3 espacios a la derecha.
+                2. Salta 2 espacios hacia atrás.
+                Si empieza en la casilla 0...
+            </p>
+            <div class="flex justify-center mb-6 overflow-x-auto py-2">
+                <div class="flex border border-slate-300">
+                    <div class="w-8 h-8 flex items-center justify-center border-r border-slate-300 bg-yellow-100">0</div>
+                    <div class="w-8 h-8 flex items-center justify-center border-r border-slate-300">1</div>
+                    <div class="w-8 h-8 flex items-center justify-center border-r border-slate-300">2</div>
+                    <div class="w-8 h-8 flex items-center justify-center border-r border-slate-300">3</div>
+                    <div class="w-8 h-8 flex items-center justify-center border-r border-slate-300">4</div>
+                    <div class="w-8 h-8 flex items-center justify-center border-r border-slate-300">5</div>
+                    <div class="w-8 h-8 flex items-center justify-center border-r border-slate-300">...</div>
+                </div>
+            </div>
+            <label class="block mb-2 font-medium">¿En qué casilla estará después de repetir la secuencia 3 veces?</label>
+            <input type="number" id="q3-input" placeholder="Introduce el número" class="w-full p-3 rounded-lg border border-slate-300 mb-3 focus:ring-2 focus:ring-indigo-500 outline-none">
+            <button onclick="checkInputAnswer(3, 3, 'q3-input', this)" class="w-full bg-indigo-600 text-white font-bold py-3 rounded-lg hover:bg-indigo-700 transition">Verificar Casilla</button>
+        </section>
+
+        <!-- Desafío 4 -->
+        <section class="card bg-white p-6 rounded-2xl shadow-sm border border-slate-200 mb-8" id="q4-container">
+            <div class="flex items-start gap-4 mb-4">
+                <span class="bg-red-100 text-red-700 text-xs font-bold px-2 py-1 rounded uppercase">Alto</span>
+                <h2 class="text-xl font-bold">4. El Código de los Silbatos</h2>
+            </div>
+            <p class="mb-4 text-slate-700">
+                Los castores se comunican con silbidos largos (-) y cortos (.).
+                Si <strong>B = -...</strong> y <strong>E = .</strong> y <strong>R = .-.</strong>
+            </p>
+            <div class="bg-slate-50 p-4 rounded-lg mb-6 text-center italic">
+                
+            </div>
+            <label class="block mb-2 font-medium">¿Cuál de estas secuencias empieza por "BE"?</label>
+            <div class="space-y-2">
+                <button onclick="checkAnswer(4, 'A', this)" class="w-full text-left p-3 rounded-lg border border-slate-200 hover:bg-slate-50 transition">A) -... .</button>
+                <button onclick="checkAnswer(4, 'B', this)" class="w-full text-left p-3 rounded-lg border border-slate-200 hover:bg-slate-50 transition">B) . -...</button>
+                <button onclick="checkAnswer(4, 'C', this)" class="w-full text-left p-3 rounded-lg border border-slate-200 hover:bg-slate-50 transition">C) -..- .</button>
+            </div>
+        </section>
+
+        <div id="final-message" class="hidden text-center p-8 bg-indigo-50 rounded-2xl border-2 border-indigo-200">
+            <h3 class="text-2xl font-bold text-indigo-700 mb-2">¡Increíble trabajo!</h3>
+            <p class="text-indigo-600">Has completado todos los desafíos de pensamiento computacional de hoy.</p>
+            <button onclick="location.reload()" class="mt-4 text-indigo-700 font-semibold underline">Intentar de nuevo</button>
+        </div>
+
+    </main>
+
+    <script>
+        let score = 0;
+        let completed = 0;
+        const total = 4;
+        const answersFound = { 1: false, 2: false, 3: false, 4: false };
+
+        function checkAnswer(questionId, correctVal, element) {
+            if (answersFound[questionId]) return;
+
+            const isCorrect = (questionId === 1 && correctVal === 3) || 
+                              (questionId === 2 && correctVal === '9,8') ||
+                              (questionId === 4 && correctVal === 'A');
+
+            handleResult(questionId, isCorrect, element);
+        }
+
+        function checkInputAnswer(questionId, correctVal, inputId, buttonElement) {
+            if (answersFound[questionId]) return;
+            const userVal = parseInt(document.getElementById(inputId).value);
+            handleResult(questionId, userVal === correctVal, buttonElement);
+        }
+
+        function handleResult(questionId, isCorrect, element) {
+            if (isCorrect) {
+                element.classList.add('correct');
+                score += 10;
+                completed++;
+                answersFound[questionId] = true;
+                document.getElementById('score').innerText = score;
+                document.getElementById('progress-text').innerText = `Completado: ${completed}/${total}`;
+                
+                // Deshabilitar otros botones del mismo contenedor
+                const container = document.getElementById(`q${questionId}-container`);
+                const buttons = container.querySelectorAll('button');
+                buttons.forEach(btn => {
+                    if (btn !== element) btn.style.opacity = '0.5';
+                    btn.disabled = true;
+                });
+
+                if (completed === total) {
+                    document.getElementById('final-message').classList.remove('hidden');
+                }
+            } else {
+                element.classList.add('incorrect');
+                setTimeout(() => {
+                    element.classList.remove('incorrect');
+                }, 1000);
+            }
+        }
+    </script>
+</body>
+</html>
